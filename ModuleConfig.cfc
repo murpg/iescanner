@@ -12,7 +12,10 @@ component {
 	this.entryPoint     = "iescanner";
 
 	function configure(){
-		settings = {};
+		settings = {
+		    extensions: ".cfm,.cfc,.js,.html,.css",
+            recursive: true
+		};
 		interceptors = [];
 	}
 
