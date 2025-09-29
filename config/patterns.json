@@ -1,0 +1,121 @@
+[
+    {
+        "pattern": "document\\.all",
+        "category": "JavaScript",
+        "severity": "HIGH",
+        "description": "IE-specific document.all",
+        "recommendation": "Use document.getElementById() or querySelector()"
+    },
+    {
+        "pattern": "attachEvent\\s*\\(",
+        "category": "JavaScript",
+        "severity": "HIGH",
+        "description": "IE-specific attachEvent",
+        "recommendation": "Use addEventListener()"
+    },
+    {
+        "pattern": "detachEvent\\s*\\(",
+        "category": "JavaScript",
+        "severity": "HIGH",
+        "description": "IE-specific detachEvent",
+        "recommendation": "Use removeEventListener()"
+    },
+    {
+        "pattern": "ActiveXObject",
+        "category": "ActiveX",
+        "severity": "CRITICAL",
+        "description": "ActiveX object usage",
+        "recommendation": "Remove ActiveX dependencies"
+    },
+    {
+        "pattern": "window\\.event(?!\\s*=)",
+        "category": "JavaScript",
+        "severity": "HIGH",
+        "description": "IE-specific window.event",
+        "recommendation": "Pass event as parameter"
+    },
+    {
+        "pattern": "<cfform",
+        "category": "ColdFusion UI",
+        "severity": "HIGH",
+        "description": "CFFORM tag",
+        "recommendation": "Replace with HTML form"
+    },
+    {
+        "pattern": "<cfinput",
+        "category": "ColdFusion UI",
+        "severity": "HIGH",
+        "description": "CFINPUT tag",
+        "recommendation": "Replace with HTML5 input"
+    },
+    {
+        "pattern": "<cfselect",
+        "category": "ColdFusion UI",
+        "severity": "HIGH",
+        "description": "CFSELECT tag",
+        "recommendation": "Replace with HTML select"
+    },
+    {
+        "pattern": "<cfgrid",
+        "category": "ColdFusion UI",
+        "severity": "HIGH",
+        "description": "CFGRID tag",
+        "recommendation": "Replace with DataTables or AG-Grid"
+    },
+    {
+        "pattern": "<cftree",
+        "category": "ColdFusion UI",
+        "severity": "HIGH",
+        "description": "CFTREE tag",
+        "recommendation": "Replace with jsTree"
+    },
+    {
+        "pattern": "<cflayout",
+        "category": "ColdFusion UI",
+        "severity": "HIGH",
+        "description": "CFLAYOUT tag",
+        "recommendation": "Use CSS Grid or Flexbox"
+    },
+    {
+        "pattern": "<cfwindow",
+        "category": "ColdFusion UI",
+        "severity": "HIGH",
+        "description": "CFWINDOW tag",
+        "recommendation": "Use modal library"
+    },
+    {
+        "pattern": "<cfmenu",
+        "category": "ColdFusion UI",
+        "severity": "HIGH",
+        "description": "CFMENU tag",
+        "recommendation": "Use CSS/JS menu"
+    },
+    {
+        "pattern": "<cfajaxproxy",
+        "category": "ColdFusion AJAX",
+        "severity": "HIGH",
+        "description": "CFAJAXPROXY tag",
+        "recommendation": "Use fetch API"
+    },
+    {
+        "pattern": "ColdFusion\\.Ajax\\.",
+        "category": "ColdFusion AJAX",
+        "severity": "HIGH",
+        "description": "ColdFusion Ajax functions",
+        "recommendation": "Use modern JavaScript"
+    },
+    {
+        "pattern": "<!--\\[if\\s+IE",
+        "category": "HTML",
+        "severity": "MEDIUM",
+        "description": "IE conditional comments",
+        "recommendation": "Remove or use feature detection"
+    },
+    {
+        "pattern": "filter\\s*:\\s*alpha",
+        "category": "CSS",
+        "severity": "MEDIUM",
+        "description": "IE CSS filter",
+        "recommendation": "Use CSS3 opacity"
+    }
+]
