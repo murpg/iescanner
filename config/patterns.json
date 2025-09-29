@@ -35,6 +35,55 @@
         "recommendation": "Pass event as parameter"
     },
     {
+        "pattern": "XDomainRequest",
+        "category": "JavaScript",
+        "severity": "HIGH",
+        "description": "IE-specific XDomainRequest for CORS",
+        "recommendation": "Use XMLHttpRequest with proper CORS headers or fetch API"
+    },
+    {
+        "pattern": "VBArray",
+        "category": "JavaScript",
+        "severity": "HIGH",
+        "description": "IE-specific VBArray object",
+        "recommendation": "Use standard JavaScript arrays"
+    },
+    {
+        "pattern": "\\.doScroll\\s*\\(",
+        "category": "JavaScript",
+        "severity": "MEDIUM",
+        "description": "IE-specific doScroll method",
+        "recommendation": "Use standard DOM ready detection or DOMContentLoaded event"
+    },
+    {
+        "pattern": "createPopup\\s*\\(",
+        "category": "JavaScript",
+        "severity": "HIGH",
+        "description": "IE-specific createPopup method",
+        "recommendation": "Use modern modal/popup libraries or window.open()"
+    },
+    {
+        "pattern": "execScript\\s*\\(",
+        "category": "JavaScript",
+        "severity": "HIGH",
+        "description": "IE-specific execScript method",
+        "recommendation": "Use eval() or Function constructor (with security considerations)"
+    },
+    {
+        "pattern": "event\\.returnValue",
+        "category": "JavaScript",
+        "severity": "MEDIUM",
+        "description": "IE-specific event.returnValue",
+        "recommendation": "Use event.preventDefault()"
+    },
+    {
+        "pattern": "event\\.cancelBubble",
+        "category": "JavaScript",
+        "severity": "MEDIUM",
+        "description": "IE-specific event.cancelBubble",
+        "recommendation": "Use event.stopPropagation()"
+    },
+    {
         "pattern": "<cfform",
         "category": "ColdFusion UI",
         "severity": "HIGH",
@@ -89,6 +138,13 @@
         "severity": "HIGH",
         "description": "CFMENU tag",
         "recommendation": "Use CSS/JS menu"
+    },
+    {
+        "pattern": "<cftooltip",
+        "category": "ColdFusion UI",
+        "severity": "MEDIUM",
+        "description": "CFTOOLTIP tag",
+        "recommendation": "Use CSS tooltips or tooltip library"
     },
     {
         "pattern": "<cfajaxproxy",

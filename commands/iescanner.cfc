@@ -4,6 +4,10 @@
  */
 component extends="commandbox.system.BaseCommand" {
 	
+	/* Cache properties for patterns */
+	property name="cachedPatterns" type="array";
+	property name="patternsLoaded" type="boolean" default="false";
+	
 	/**
 	 * Run the IE Scanner
 	 * @directory.hint Directory to scan (defaults to current directory)
@@ -11,16 +15,24 @@ component extends="commandbox.system.BaseCommand" {
 	 * @format.hint Output format (csv, json, html)
 	 * @help.hint Show help information
 	 * @verbose.hint Show detailed progress
+	 * @reloadPatterns.hint Force reload of patterns from JSON file
 	 */
 	function run(
 		string directory = ".",
 		string output = "",
 		string format = "csv",
 		boolean help = false,
-		boolean verbose = false
+		boolean verbose = false,
+		boolean reloadPatterns = false
 	) {
 		
-		// Show help if requested
+		/* Clear pattern cache if requested */
+		if (arguments.reloadPatterns) {
+			clearPatternCache();
+			print.greenLine("Pattern cache cleared. Patterns will be reloaded from JSON.");
+		}
+		
+		/* Show help if requested */
 		if (arguments.help) {
 			print.line();
 			print.boldCyanLine("IE Legacy Code Scanner");
@@ -34,30 +46,32 @@ component extends="commandbox.system.BaseCommand" {
 			print.line("  box iescanner directory=C:\myapp           ## Scan specific directory");
 			print.line("  box iescanner directory=.                  ## Scan current directory explicitly");
 			print.line("  box iescanner format=html output=report.html");
+			print.line("  box iescanner reloadPatterns=true          ## Force reload patterns from JSON");
 			print.line();
 			print.yellowLine("Options:");
-			print.line("  directory - Directory to scan (default: current directory)");
-			print.line("  output    - Output file name (default: ie-scan-[timestamp].[format])");
-			print.line("  format    - Output format: csv, json, or html (default: csv)");
-			print.line("  verbose   - Show detailed progress (default: false)");
+			print.line("  directory      - Directory to scan (default: current directory)");
+			print.line("  output         - Output file name (default: ie-scan-[timestamp].[format])");
+			print.line("  format         - Output format: csv, json, or html (default: csv)");
+			print.line("  verbose        - Show detailed progress (default: false)");
+			print.line("  reloadPatterns - Force reload patterns from JSON file (default: false)");
 			print.line();
 			return;
 		}
 		
-		// Set default output filename if not provided
+		/* Set default output filename if not provided */
 		if (!len(arguments.output)) {
 			var timestamp = dateFormat(now(), "yyyymmdd") & timeFormat(now(), "HHmmss");
 			arguments.output = "ie-scan-#timestamp#.#arguments.format#";
 		}
 		
-		// Resolve directory path (handles ".", relative, and absolute paths)
+		/* Resolve directory path (handles ".", relative, and absolute paths) */
 		if (arguments.directory == ".") {
 			arguments.directory = getCWD();
 		} else {
 			arguments.directory = resolvePath(arguments.directory);
 		}
 		
-		// Validate directory exists
+		/* Validate directory exists */
 		if (!directoryExists(arguments.directory)) {
 			print.redLine("ERROR: Directory not found: #arguments.directory#");
 			print.line();
@@ -68,7 +82,7 @@ component extends="commandbox.system.BaseCommand" {
 			return;
 		}
 		
-		// Start scanning
+		/* Start scanning */
 		print.line();
 		print.boldGreenLine("IE Legacy Code Scanner");
 		print.line("======================");
@@ -77,12 +91,12 @@ component extends="commandbox.system.BaseCommand" {
 		print.line("Format: #arguments.format#");
 		print.line();
 		
-		// Define patterns to search for
+		/* Get patterns - this will now load from JSON */
 		var patterns = getPatterns();
 		var issues = [];
 		var filesScanned = 0;
 		
-		// Get files to scan
+		/* Get files to scan */
 		print.line("Searching for files...");
 		
 		try {
@@ -105,7 +119,7 @@ component extends="commandbox.system.BaseCommand" {
 			return;
 		}
 		
-		// Scan each file
+		/* Scan each file */
 		print.line();
 		print.line("Scanning files...");
 		
@@ -118,7 +132,7 @@ component extends="commandbox.system.BaseCommand" {
 				print.text(".");
 			}
 			
-			// Scan the file
+			/* Scan the file */
 			var fileIssues = scanFile(file, patterns, arguments.directory);
 			issues.append(fileIssues, true);
 		}
@@ -129,7 +143,7 @@ component extends="commandbox.system.BaseCommand" {
 		
 		print.line();
 		
-		// Generate output
+		/* Generate output */
 		try {
 			generateOutput(issues, arguments.output, arguments.format);
 			print.greenLine("Report saved: #arguments.output#");
@@ -137,14 +151,14 @@ component extends="commandbox.system.BaseCommand" {
 			print.redLine("Error saving report: #e.message#");
 		}
 		
-		// Show summary
+		/* Show summary */
 		print.line();
 		print.boldGreenLine("==== SCAN COMPLETE ====");
 		print.line("Files scanned: #filesScanned#");
 		print.line("Issues found: #issues.len()#");
 		print.line();
 		
-		// Show severity breakdown if issues found
+		/* Show severity breakdown if issues found */
 		if (issues.len() > 0) {
 			var severityCount = countBySeverity(issues);
 			print.yellowLine("Issues by Severity:");
@@ -160,11 +174,126 @@ component extends="commandbox.system.BaseCommand" {
 	}
 	
 	/**
-	 * Get patterns to search for
+	 * Get patterns to search for - Now loads from JSON file
 	 */
 	private array function getPatterns() {
+		/* Return cached patterns if already loaded */
+		if (structKeyExists(variables, "patternsLoaded") && variables.patternsLoaded && structKeyExists(variables, "cachedPatterns")) {
+			return variables.cachedPatterns;
+		}
+		
+		try {
+			/* Try to load from JSON file */
+			var patterns = loadPatternsFromJSON();
+			
+			/* Cache the patterns */
+			variables.cachedPatterns = patterns;
+			variables.patternsLoaded = true;
+			
+			return patterns;
+			
+		} catch (any e) {
+			/* Log error if available */
+			if (structKeyExists(variables, "print")) {
+				print.yellowLine("Warning: Could not load patterns from JSON: #e.message#");
+				print.yellowLine("Using default patterns instead.");
+			}
+			
+			/* Fall back to default patterns */
+			return getDefaultPatterns();
+		}
+	}
+	
+	/**
+	 * Load patterns from the JSON configuration file
+	 */
+	private array function loadPatternsFromJSON() {
+		/* Build path to patterns.json */
+		var moduleRoot = expandPath("/commandbox-iescanner");
+		var patternFile = moduleRoot & "/config/patterns.json";
+		
+		/* Alternative paths to try if the first doesn't work */
+		if (!fileExists(patternFile)) {
+			/* Try relative to the command file */
+			patternFile = expandPath("../config/patterns.json");
+		}
+		
+		if (!fileExists(patternFile)) {
+			/* Try relative to current directory */
+			patternFile = expandPath("./modules/commandbox-iescanner/config/patterns.json");
+		}
+		
+		if (!fileExists(patternFile)) {
+			/* Try CommandBox modules path */
+			var cbPath = expandPath("~/.CommandBox/cfml/modules/commandbox-iescanner/config/patterns.json");
+			if (fileExists(cbPath)) {
+				patternFile = cbPath;
+			}
+		}
+		
+		/* If still not found, throw error */
+		if (!fileExists(patternFile)) {
+			throw(
+				type = "FileNotFoundException",
+				message = "patterns.json file not found",
+				detail = "Searched paths: #moduleRoot#/config/patterns.json and alternatives"
+			);
+		}
+		
+		/* Read and parse JSON file */
+		var jsonContent = fileRead(patternFile);
+		var patternsData = deserializeJSON(jsonContent);
+		
+		/* Process patterns to convert special characters */
+		var processedPatterns = [];
+		
+		for (var pattern in patternsData) {
+			/* Create new pattern object with processed values */
+			var processedPattern = {};
+			processedPattern["severity"] = structKeyExists(pattern, "severity") ? pattern.severity : "MEDIUM";
+			processedPattern["description"] = structKeyExists(pattern, "description") ? pattern.description : "";
+			processedPattern["recommendation"] = structKeyExists(pattern, "recommendation") ? pattern.recommendation : "";
+			
+			/* Handle pattern string - convert < to chr(60) */
+			if (structKeyExists(pattern, "pattern")) {
+				var patternString = pattern.pattern;
+				
+				/* Check if pattern contains < character */
+				if (find("<", patternString)) {
+					/* Replace all < with chr(60) */
+					patternString = replace(patternString, "<", chr(60), "all");
+				}
+				
+				processedPattern["pattern"] = patternString;
+			}
+			
+			/* Validate pattern has required fields */
+			if (!structKeyExists(processedPattern, "pattern") || !len(processedPattern.pattern)) {
+				continue; /* Skip invalid patterns */
+			}
+			
+			processedPatterns.append(processedPattern);
+		}
+		
+		/* Validate we have at least some patterns */
+		if (arrayLen(processedPatterns) == 0) {
+			throw(
+				type = "InvalidPatternException",
+				message = "No valid patterns found in JSON file",
+				detail = "The patterns.json file exists but contains no valid patterns"
+			);
+		}
+		
+		return processedPatterns;
+	}
+	
+	/**
+	 * Get default patterns as fallback
+	 */
+	private array function getDefaultPatterns() {
+		/* Minimal set of critical patterns as fallback */
 		return [
-		{
+			{
 				pattern: "document\.all",
 				severity: "HIGH",
 				description: "IE-specific document.all",
@@ -177,46 +306,10 @@ component extends="commandbox.system.BaseCommand" {
 				recommendation: "Use addEventListener()"
 			},
 			{
-				pattern: "detachEvent",
-				severity: "HIGH",
-				description: "IE-specific detachEvent",
-				recommendation: "Use removeEventListener()"
-			},
-			{
 				pattern: "ActiveXObject",
 				severity: "CRITICAL",
 				description: "ActiveX object usage",
 				recommendation: "Remove ActiveX dependencies"
-			},
-			{
-				pattern: "XDomainRequest",
-				severity: "HIGH",
-				description: "IE-specific XDomainRequest for CORS",
-				recommendation: "Use XMLHttpRequest with proper CORS headers or fetch API"
-			},
-			{
-				pattern: "VBArray",
-				severity: "HIGH",
-				description: "IE-specific VBArray object",
-				recommendation: "Use standard JavaScript arrays"
-			},
-			{
-				pattern: "\.doScroll\s*\(",
-				severity: "MEDIUM",
-				description: "IE-specific doScroll method",
-				recommendation: "Use standard DOM ready detection or DOMContentLoaded event"
-			},
-			{
-				pattern: "createPopup\s*\(",
-				severity: "HIGH",
-				description: "IE-specific createPopup method",
-				recommendation: "Use modern modal/popup libraries or window.open()"
-			},
-			{
-				pattern: "execScript\s*\(",
-				severity: "HIGH",
-				description: "IE-specific execScript method",
-				recommendation: "Use eval() or Function constructor (with security considerations)"
 			},
 			{
 				pattern: chr(60) & "cfform",
@@ -225,94 +318,16 @@ component extends="commandbox.system.BaseCommand" {
 				recommendation: "Replace with HTML form"
 			},
 			{
-				pattern: chr(60) & "cfinput",
-				severity: "HIGH",
-				description: "CFINPUT tag",
-				recommendation: "Replace with HTML5 input"
-			},
-			{
-				pattern: chr(60) & "cfselect",
-				severity: "HIGH",
-				description: "CFSELECT tag",
-				recommendation: "Replace with HTML select"
-			},
-			{
 				pattern: chr(60) & "cfgrid",
 				severity: "HIGH",
 				description: "CFGRID tag",
 				recommendation: "Replace with modern grid library"
 			},
 			{
-				pattern: chr(60) & "cftree",
+				pattern: "XDomainRequest",
 				severity: "HIGH",
-				description: "CFTREE tag",
-				recommendation: "Replace with jsTree or similar"
-			},
-			{
-				pattern: chr(60) & "cflayout",
-				severity: "HIGH",
-				description: "CFLAYOUT tag",
-				recommendation: "Use CSS Grid or Flexbox"
-			},
-			{
-				pattern: chr(60) & "cfwindow",
-				severity: "HIGH",
-				description: "CFWINDOW tag",
-				recommendation: "Use modal library"
-			},
-			{
-				pattern: chr(60) & "cfajaxproxy",
-				severity: "HIGH",
-				description: "CFAJAXPROXY tag",
-				recommendation: "Use fetch API"
-			},
-			{
-				pattern: "ColdFusion\.Ajax",
-				severity: "HIGH",
-				description: "ColdFusion Ajax functions",
-				recommendation: "Replace with modern JavaScript"
-			},
-			{
-				pattern: chr(60) & "!--\[if\s+IE",
-				severity: "MEDIUM",
-				description: "IE conditional comments",
-				recommendation: "Remove or use feature detection"
-			},
-			{
-				pattern: "window\.event(?!\s*=)",
-				severity: "HIGH",
-				description: "IE-specific window.event",
-				recommendation: "Pass event as parameter to handlers"
-			},
-			{
-				pattern: "event\.returnValue",
-				severity: "MEDIUM",
-				description: "IE-specific event.returnValue",
-				recommendation: "Use event.preventDefault()"
-			},
-			{
-				pattern: "event\.cancelBubble",
-				severity: "MEDIUM",
-				description: "IE-specific event.cancelBubble",
-				recommendation: "Use event.stopPropagation()"
-			},
-			{
-				pattern: chr(60) & "cfmenu",
-				severity: "HIGH",
-				description: "CFMENU tag",
-				recommendation: "Use CSS/JavaScript menu"
-			},
-			{
-				pattern: chr(60) & "cftooltip",
-				severity: "MEDIUM",
-				description: "CFTOOLTIP tag",
-				recommendation: "Use CSS tooltips or tooltip library"
-			},
-			{
-				pattern: "filter\s*:\s*alpha",
-				severity: "MEDIUM",
-				description: "IE-specific CSS alpha filter",
-				recommendation: "Use CSS3 opacity property"
+				description: "IE-specific XDomainRequest",
+				recommendation: "Use XMLHttpRequest or fetch API"
 			}
 		];
 	}
@@ -327,7 +342,7 @@ component extends="commandbox.system.BaseCommand" {
 			var content = fileRead(arguments.filePath);
 			var lines = listToArray(content, chr(10));
 			
-			// Make relative path
+			/* Make relative path */
 			var relativePath = replace(arguments.filePath, arguments.baseDir, "");
 			if (left(relativePath, 1) == "\" || left(relativePath, 1) == "/") {
 				relativePath = mid(relativePath, 2, len(relativePath));
@@ -339,22 +354,27 @@ component extends="commandbox.system.BaseCommand" {
 				
 				for (var pattern in arguments.patterns) {
 					try {
+						/* Ensure pattern has valid regex */
+						if (!structKeyExists(pattern, "pattern") || !len(pattern.pattern)) {
+							continue;
+						}
+						
 						if (reFindNoCase(pattern.pattern, line)) {
 							issues.append({
 								file: relativePath,
 								line: lineNum,
-								severity: pattern.severity,
-								description: pattern.description,
-								recommendation: pattern.recommendation
+								severity: structKeyExists(pattern, "severity") ? pattern.severity : "MEDIUM",
+								description: structKeyExists(pattern, "description") ? pattern.description : "Detected pattern",
+								recommendation: structKeyExists(pattern, "recommendation") ? pattern.recommendation : "Review and update"
 							});
 						}
-					} catch (any e) {
-						// Skip invalid patterns
+					} catch (any patternError) {
+						/* Skip invalid regex patterns but continue scanning */
 					}
 				}
 			}
 		} catch (any e) {
-			// Skip files that cannot be read
+			/* Skip files that cannot be read but don't stop the scan */
 		}
 		
 		return issues;
@@ -379,7 +399,7 @@ component extends="commandbox.system.BaseCommand" {
 				fileWrite(arguments.outputPath, html);
 				break;
 				
-			default: // csv
+			default: /* csv */
 				var csv = ["File,Line,Severity,Description,Recommendation"];
 				for (var issue in arguments.issues) {
 					var row = [];
@@ -417,23 +437,19 @@ component extends="commandbox.system.BaseCommand" {
 		html.append('.high { color: ##ff8800; font-weight: bold; }');
 		html.append('.medium { color: ##ffaa00; }');
 		html.append('.low { color: ##666666; }');
-		html.append('.stats { display: flex; justify-content: space-around; margin: 20px 0; }');
-		html.append('.stat-card { text-align: center; padding: 15px; background: ##f9f9f9; border-radius: 5px; flex: 1; margin: 0 10px; }');
-		html.append('.stat-number { font-size: 2em; font-weight: bold; color: ##4CAF50; }');
-		html.append('.stat-label { color: ##666; margin-top: 5px; }');
 		html.append('</style>');
 		html.append('</head>');
 		html.append('<body>');
 		html.append('<div class="container">');
 		html.append('<h1>IE Legacy Code Scan Report</h1>');
 		
-		// Summary section
+		/* Summary section */
 		html.append('<div class="summary">');
 		html.append('<h2 style="margin-top: 0;">Scan Summary</h2>');
 		html.append('<p><strong>Scan Date:</strong> #dateTimeFormat(now(), "yyyy-mm-dd HH:nn:ss")#</p>');
 		html.append('<p><strong>Total Issues Found:</strong> #arguments.issues.len()#</p>');
 		
-		// Count by severity
+		/* Count by severity */
 		var severityCount = countBySeverity(arguments.issues);
 		if (severityCount.CRITICAL > 0) {
 			html.append('<p><span class="critical">CRITICAL Issues: #severityCount.CRITICAL#</span></p>');
@@ -449,7 +465,7 @@ component extends="commandbox.system.BaseCommand" {
 		}
 		html.append('</div>');
 		
-		// Issues table
+		/* Issues table */
 		if (arguments.issues.len() > 0) {
 			html.append('<h2>Issues Detail</h2>');
 			html.append('<table>');
@@ -483,7 +499,7 @@ component extends="commandbox.system.BaseCommand" {
 			html.append('</div>');
 		}
 		
-		html.append('</div>'); // Close container
+		html.append('</div>'); /* Close container */
 		html.append('</body>');
 		html.append('</html>');
 		
@@ -508,5 +524,13 @@ component extends="commandbox.system.BaseCommand" {
 		}
 		
 		return count;
+	}
+	
+	/**
+	 * Clear pattern cache
+	 */
+	public void function clearPatternCache() {
+		variables.patternsLoaded = false;
+		variables.cachedPatterns = [];
 	}
 }
