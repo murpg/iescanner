@@ -29,26 +29,26 @@ component extends="commandbox.system.BaseCommand" {
 		/* Clear pattern cache if requested */
 		if (arguments.reloadPatterns) {
 			clearPatternCache();
-			print.greenLine("Pattern cache cleared. Patterns will be reloaded from JSON.");
+			print.line("Pattern cache cleared. Patterns will be reloaded from JSON.");
 		}
 		
 		/* Show help if requested */
 		if (arguments.help) {
 			print.line();
-			print.boldCyanLine("IE Legacy Code Scanner");
+			print.line("IE Legacy Code Scanner");
 			print.line("======================");
 			print.line();
-			print.yellowLine("Usage:");
+			print.line("Usage:");
 			print.line("  box iescanner [directory=path] [output=file] [format=csv|json|html]");
 			print.line();
-			print.yellowLine("Examples:");
+			print.line("Examples:");
 			print.line("  box iescanner                              ## Scan current directory");
 			print.line("  box iescanner directory=C:\myapp           ## Scan specific directory");
 			print.line("  box iescanner directory=.                  ## Scan current directory explicitly");
 			print.line("  box iescanner format=html output=report.html");
 			print.line("  box iescanner reloadPatterns=true          ## Force reload patterns from JSON");
 			print.line();
-			print.yellowLine("Options:");
+			print.line("Options:");
 			print.line("  directory      - Directory to scan (default: current directory)");
 			print.line("  output         - Output file name (default: ie-scan-[timestamp].[format])");
 			print.line("  format         - Output format: csv, json, or html (default: csv)");
@@ -73,9 +73,9 @@ component extends="commandbox.system.BaseCommand" {
 		
 		/* Validate directory exists */
 		if (!directoryExists(arguments.directory)) {
-			print.redLine("ERROR: Directory not found: #arguments.directory#");
+			print.line("ERROR: Directory not found: #arguments.directory#");
 			print.line();
-			print.yellowLine("Please specify a valid directory:");
+			print.line("Please specify a valid directory:");
 			print.line("  box iescanner directory=C:\path\to\your\app");
 			print.line("  box iescanner directory=.");
 			print.line();
@@ -84,17 +84,23 @@ component extends="commandbox.system.BaseCommand" {
 		
 		/* Start scanning */
 		print.line();
-		print.boldGreenLine("IE Legacy Code Scanner");
-		print.line("======================");
+		print.line("+==========================================+");
+		print.line("|   IE Legacy Code Scanner - v1.0.0       |");
+		print.line("+==========================================+");
+		print.line();
 		print.line("Directory: #arguments.directory#");
 		print.line("Output: #arguments.output#");
 		print.line("Format: #arguments.format#");
 		print.line();
 		
+		/* Track start time for performance metrics */
+		var startTime = getTickCount();
+		
 		/* Get patterns - this will now load from JSON */
 		var patterns = getPatterns();
 		var issues = [];
 		var filesScanned = 0;
+		var filesWithIssues = 0;
 		
 		/* Get files to scan */
 		print.line("Searching for files...");
@@ -107,69 +113,108 @@ component extends="commandbox.system.BaseCommand" {
 				"*.cfm|*.cfc|*.js|*.html|*.htm"
 			);
 		} catch (any e) {
-			print.redLine("Error listing files: #e.message#");
+			print.line("Error listing files: #e.message#");
 			return;
 		}
 		
 		print.line("Found #files.len()# files to scan");
 		
 		if (files.len() == 0) {
-			print.yellowLine("No files found matching the criteria.");
+			print.line("No files found matching the criteria.");
 			print.line("Make sure the directory contains .cfm, .cfc, .js, .html, or .htm files.");
 			return;
 		}
 		
-		/* Scan each file */
+		/* Initialize progress tracking */
 		print.line();
 		print.line("Scanning files...");
+		var progressInterval = max(1, int(files.len() / 50)); // Show up to 50 progress markers
 		
+		/* Scan each file */
 		for (var file in files) {
 			filesScanned++;
 			
 			if (arguments.verbose) {
 				print.line("[#filesScanned#/#files.len()#] #getFileFromPath(file)#");
-			} else if (filesScanned % 10 == 0) {
-				print.text(".");
+			} else {
+				// Show progress dots at intervals
+				if (filesScanned % progressInterval == 0 || filesScanned == files.len()) {
+					var percent = int((filesScanned / files.len()) * 100);
+					print.text(".").toConsole();
+					
+					// Show percentage every 20%
+					if (percent % 20 == 0 && filesScanned % progressInterval == 0) {
+						print.text(" #percent#% ").toConsole();
+					}
+				}
 			}
 			
 			/* Scan the file */
 			var fileIssues = scanFile(file, patterns, arguments.directory);
-			issues.append(fileIssues, true);
+			
+			if (fileIssues.len() > 0) {
+				filesWithIssues++;
+				issues.append(fileIssues, true);
+			}
 		}
 		
+		/* Complete progress display */
 		if (!arguments.verbose && files.len() > 0) {
-			print.line();
+			print.line(" 100%");
 		}
 		
 		print.line();
+		
+		/* Calculate scan time */
+		var scanTime = (getTickCount() - startTime) / 1000;
 		
 		/* Generate output */
 		try {
 			generateOutput(issues, arguments.output, arguments.format);
-			print.greenLine("Report saved: #arguments.output#");
+			print.line("Report saved: #arguments.output#");
 		} catch (any e) {
-			print.redLine("Error saving report: #e.message#");
+			print.line("Error saving report: #e.message#");
 		}
 		
 		/* Show summary */
 		print.line();
-		print.boldGreenLine("==== SCAN COMPLETE ====");
+		print.line("[SUCCESS] Scan Complete!");
+		print.line();
+		print.line("========================================");
+		print.line("SUMMARY:");
 		print.line("Files scanned: #filesScanned#");
-		print.line("Issues found: #issues.len()#");
+		print.line("Files with issues: #filesWithIssues#");
+		print.line("Total issues found: #issues.len()#");
+		print.line("Scan time: #numberFormat(scanTime, '0.00')# seconds");
 		print.line();
 		
 		/* Show severity breakdown if issues found */
 		if (issues.len() > 0) {
 			var severityCount = countBySeverity(issues);
-			print.yellowLine("Issues by Severity:");
-			if (severityCount.CRITICAL > 0) print.redLine("  CRITICAL: #severityCount.CRITICAL#");
-			if (severityCount.HIGH > 0) print.yellowLine("  HIGH: #severityCount.HIGH#");
+			print.line("Issues by Severity:");
+			if (severityCount.CRITICAL > 0) print.line("  CRITICAL: #severityCount.CRITICAL#");
+			if (severityCount.HIGH > 0) print.line("  HIGH: #severityCount.HIGH#");
 			if (severityCount.MEDIUM > 0) print.line("  MEDIUM: #severityCount.MEDIUM#");
 			if (severityCount.LOW > 0) print.line("  LOW: #severityCount.LOW#");
+			
+			/* Show sample issues if verbose */
+			if (arguments.verbose && issues.len() > 0) {
+				print.line();
+				print.line("Sample Issues:");
+				var count = 0;
+				for (var issue in issues) {
+					if (++count > 5) break;
+					print.line("  * [#issue.severity#] #issue.file#:#issue.line# - #issue.description#");
+				}
+				if (issues.len() > 5) {
+					print.line("  ... and #issues.len() - 5# more issues");
+				}
+			}
 		} else {
-			print.greenLine("✓ No IE-specific issues found!");
+			print.line("[SUCCESS] No IE-specific issues found!");
 		}
 		
+		print.line("========================================");
 		print.line();
 	}
 	
@@ -195,8 +240,8 @@ component extends="commandbox.system.BaseCommand" {
 		} catch (any e) {
 			/* Log error if available */
 			if (structKeyExists(variables, "print")) {
-				print.yellowLine("Warning: Could not load patterns from JSON: #e.message#");
-				print.yellowLine("Using default patterns instead.");
+				print.line("Warning: Could not load patterns from JSON: #e.message#");
+				print.line("Using default patterns instead.");
 			}
 			
 			/* Fall back to default patterns */
@@ -292,21 +337,22 @@ component extends="commandbox.system.BaseCommand" {
 	 */
 	private array function getDefaultPatterns() {
 		/* Minimal set of critical patterns as fallback */
+		/* Using string concatenation to avoid false positives when scanning this file */
 		return [
 			{
-				pattern: "document\.all",
+				pattern: "docu" & "ment\.all",
 				severity: "HIGH",
-				description: "IE-specific document.all",
+				description: "IE-specific docu" & "ment.all",
 				recommendation: "Use document.getElementById() or querySelector()"
 			},
 			{
-				pattern: "attachEvent",
+				pattern: "attach" & "Event",
 				severity: "HIGH",
-				description: "IE-specific attachEvent",
+				description: "IE-specific attach" & "Event",
 				recommendation: "Use addEventListener()"
 			},
 			{
-				pattern: "ActiveXObject",
+				pattern: "ActiveX" & "Object",
 				severity: "CRITICAL",
 				description: "ActiveX object usage",
 				recommendation: "Remove ActiveX dependencies"
@@ -324,10 +370,10 @@ component extends="commandbox.system.BaseCommand" {
 				recommendation: "Replace with modern grid library"
 			},
 			{
-				pattern: "XDomainRequest",
+				pattern: "XDomain" & "Request",
 				severity: "HIGH",
-				description: "IE-specific XDomainRequest",
-				recommendation: "Use XMLHttpRequest or fetch API"
+				description: "IE-specific XDomain" & "Request for CORS",
+				recommendation: "Use XMLHttpRequest with proper CORS headers or fetch API"
 			}
 		];
 	}
@@ -420,6 +466,9 @@ component extends="commandbox.system.BaseCommand" {
 	private string function generateHTMLReport(required array issues) {
 		var html = [];
 		
+		/* Count by severity first for summary */
+		var severityCount = countBySeverity(arguments.issues);
+		
 		html.append('<!DOCTYPE html>');
 		html.append('<html>');
 		html.append('<head>');
@@ -429,6 +478,10 @@ component extends="commandbox.system.BaseCommand" {
 		html.append('.container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }');
 		html.append('h1 { color: ##333333; border-bottom: 3px solid ##4CAF50; padding-bottom: 10px; }');
 		html.append('.summary { background: ##f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid ##4CAF50; }');
+		html.append('.stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }');
+		html.append('.stat-card { background: ##f9f9f9; padding: 15px; border-radius: 5px; text-align: center; }');
+		html.append('.stat-card h3 { margin: 0 0 10px 0; color: ##666; font-size: 14px; }');
+		html.append('.stat-card .value { font-size: 24px; font-weight: bold; }');
 		html.append('table { width: 100%; border-collapse: collapse; margin-top: 20px; }');
 		html.append('th { background: ##4CAF50; color: white; padding: 12px; text-align: left; }');
 		html.append('td { padding: 10px; border-bottom: 1px solid ##dddddd; }');
@@ -448,20 +501,33 @@ component extends="commandbox.system.BaseCommand" {
 		html.append('<h2 style="margin-top: 0;">Scan Summary</h2>');
 		html.append('<p><strong>Scan Date:</strong> #dateTimeFormat(now(), "yyyy-mm-dd HH:nn:ss")#</p>');
 		html.append('<p><strong>Total Issues Found:</strong> #arguments.issues.len()#</p>');
+		html.append('</div>');
 		
-		/* Count by severity */
-		var severityCount = countBySeverity(arguments.issues);
+		/* Stat cards */
+		html.append('<div class="stat-cards">');
 		if (severityCount.CRITICAL > 0) {
-			html.append('<p><span class="critical">CRITICAL Issues: #severityCount.CRITICAL#</span></p>');
+			html.append('<div class="stat-card">');
+			html.append('<h3>Critical Issues</h3>');
+			html.append('<div class="value critical">#severityCount.CRITICAL#</div>');
+			html.append('</div>');
 		}
 		if (severityCount.HIGH > 0) {
-			html.append('<p><span class="high">HIGH Priority Issues: #severityCount.HIGH#</span></p>');
+			html.append('<div class="stat-card">');
+			html.append('<h3>High Priority</h3>');
+			html.append('<div class="value high">#severityCount.HIGH#</div>');
+			html.append('</div>');
 		}
 		if (severityCount.MEDIUM > 0) {
-			html.append('<p><span class="medium">MEDIUM Priority Issues: #severityCount.MEDIUM#</span></p>');
+			html.append('<div class="stat-card">');
+			html.append('<h3>Medium Priority</h3>');
+			html.append('<div class="value medium">#severityCount.MEDIUM#</div>');
+			html.append('</div>');
 		}
 		if (severityCount.LOW > 0) {
-			html.append('<p><span class="low">LOW Priority Issues: #severityCount.LOW#</span></p>');
+			html.append('<div class="stat-card">');
+			html.append('<h3>Low Priority</h3>');
+			html.append('<div class="value low">#severityCount.LOW#</div>');
+			html.append('</div>');
 		}
 		html.append('</div>');
 		
@@ -494,7 +560,7 @@ component extends="commandbox.system.BaseCommand" {
 			html.append('</table>');
 		} else {
 			html.append('<div style="text-align: center; padding: 40px; background: ##e8f5e9; border-radius: 5px; margin: 20px 0;">');
-			html.append('<h2 style="color: ##4CAF50;">✓ No IE-Specific Issues Found!</h2>');
+			html.append('<h2 style="color: ##4CAF50;">✔ No IE-Specific Issues Found!</h2>');
 			html.append('<p>Your code appears to be free of IE-specific patterns.</p>');
 			html.append('</div>');
 		}
