@@ -4,4 +4,10 @@
     "type": "commandbox-modules",
     "slug": "commandbox-iescanner",
     "keywords": "commandbox-iescanner,iescanner"
+    "homepage":"https://github.com/murpg/iescanner",
+    "documentation":"https://github.com/murpg/iescanner",
+    "repository":{
+        "type":"github",
+        "URL":"https://github.com/murpg/iescanner.git"
+    }
 }
