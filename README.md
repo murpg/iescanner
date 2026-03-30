@@ -2,37 +2,47 @@
 
 A CommandBox module that scans ColdFusion applications to identify Internet Explorer-specific code patterns that need to be updated for modern browser compatibility.
 
-## ⚠️ CRITICAL: Internet Explorer Mode EOL in 2029
+## WARNING: Internet Explorer Mode EOL in 2029
 
 **Your IE-dependent applications will completely stop working in 2029. This is not optional - there will be no fallback.**
 
 ### The Timeline
+
 - **June 2022**: Internet Explorer 11 desktop application was retired
-- **Now (2025)**: IE mode in Edge is the only way to run IE-dependent code
-- **2029**: IE mode will be completely removed from Microsoft Edge
+- **Windows Server 2019**: IE-dependent sites still function today across multiple browsers
+- **Windows Server 2022 / 2025**: IE-dependent sites will not run in Chrome or Firefox at all. Microsoft Edge in IE Mode is the only browser capable of rendering them on these operating systems. There is no other workaround.
+- **Now (2026)**: IE Mode in Edge is the only viable path for IE-dependent code on any modern OS
+- **2029**: IE Mode will be completely removed from Microsoft Edge — no fallback will exist on any platform
 
 ### What This Means For Your Applications
 
-When IE mode reaches end-of-life in 2029:
-- **No IE browser will exist** on any Windows system
-- **No compatibility mode** will be available
-- **ActiveX controls will not run** anywhere
-- **IE-specific JavaScript will fail** with errors
-- **Legacy applications will completely stop functioning**
+**On Windows Server 2022 and Windows Server 2025 right now:**
+
+- Chrome and Firefox cannot render IE-dependent sites at all
+- Microsoft Edge in IE Mode is the only browser that works
+- This is already the reality for any team that has upgraded their OS
+
+**After 2029 on any OS:**
+
+- No IE browser will exist on any Windows system
+- No compatibility mode will be available in any browser
+- ActiveX controls will not run anywhere
+- IE-specific JavaScript will fail with errors
+- Legacy applications will completely stop functioning
 
 ### Why This Is A Crisis
 
 Many organizations don't realize they're sitting on a time bomb:
 
-1. **IE Mode masks the problem** - Your apps "still work" today, creating false security
-2. **Dependencies are hidden** - IE-specific code is buried in:
+1. **OS upgrades trigger the problem now — not in 2029** - Moving from Windows Server 2019 to 2022 or 2025 immediately breaks IE-dependent sites in Chrome and Firefox. Edge IE Mode becomes the only option the moment that upgrade happens. Organizations planning infrastructure upgrades face this problem today, not in three years.
+2. **IE Mode masks the problem** - Sites appear to work in Edge IE Mode today, creating false confidence that nothing needs to change
+3. **Dependencies are hidden** - IE-specific code is buried in:
    - Legacy ColdFusion components
    - Old JavaScript libraries
    - Third-party components
    - CSS with IE-specific hacks
    - Intranet applications
-
-3. **Binary failure** - Applications won't degrade gracefully; they'll simply stop working
+4. **Binary failure in 2029** - When IE Mode is removed from Edge, applications will not degrade gracefully; they will simply stop working in every browser on every OS
 
 ### Real-World Impact
 
@@ -49,18 +59,21 @@ if (document.all) {  // WILL NOT EXECUTE
 element.attachEvent('onclick', handler);  // COMPLETE FAILURE
 ```
 
-### The 4-Year Remediation Timeline
+### The Remediation Timeline
 
-**Starting now (2025) is crucial:**
+**The urgency is not only 2029 — it is your next OS upgrade.**
 
-- **Year 1 (2025-2026)**: Discovery and assessment using IEScanner
-- **Year 2 (2026-2027)**: Development and remediation
-- **Year 3 (2027-2028)**: Testing and deployment
-- **Year 4 (2028-2029)**: Buffer for issues and final migration
+Any migration from Windows Server 2019 to 2022 or 2025 immediately drops Chrome and Firefox support for IE-dependent sites. If an OS upgrade is on the roadmap, remediation must be completed before that upgrade occurs, regardless of the 2029 deadline.
+
+- **Now (2026)**: Discovery and assessment using IEScanner
+- **Year 2 (2027)**: Development and remediation
+- **Year 3 (2028)**: Testing and deployment
+- **Year 4 (2029)**: Final deadline — IE Mode removed from Edge on all platforms
 
 ### Business Consequences of Inaction
 
 Organizations that don't remediate before 2029 will face:
+
 - Complete application failure with no workaround
 - Emergency remediation at 10x the cost
 - Critical business systems going offline
@@ -70,13 +83,14 @@ Organizations that don't remediate before 2029 will face:
 **This is why IEScanner exists** - to help you identify and fix these issues before your applications catastrophically fail in 2029.
 
 ## Table of Contents
+
 - [Installation](#installation)
 - [Usage](#usage)
 - [Configuration](#configuration)
 - [Pattern Detection](#pattern-detection)
 - [Output Formats](#output-formats)
 - [Examples](#examples)
-- [API Reference](#api-reference)
+- [Beyond IE Detection](#beyond-ie-detection)
 
 ## Prerequisites
 
@@ -93,6 +107,7 @@ IEScanner requires CommandBox CLI to be installed. CommandBox is available for a
 For detailed installation instructions for your operating system, visit: https://commandbox.ortusbooks.com/setup/installation
 
 Quick install commands:
+
 - **Mac (Homebrew)**: `brew install commandbox`
 - **Ubuntu/Debian**: `sudo apt-get install commandbox`
 - **RedHat/CentOS**: `sudo yum install commandbox`
@@ -102,7 +117,7 @@ Quick install commands:
 
 Install the module via CommandBox:
 
-```bash
+```
 box install iescanner
 ```
 
@@ -120,428 +135,554 @@ Or add it to your `box.json` dependencies:
 
 The IEScanner module provides a simple command-line interface for scanning your ColdFusion codebase for Internet Explorer-specific patterns.
 
+> NOTE: All examples below assume you are already inside the CommandBox shell. If you are running from your OS command line, prefix each command with `box `.
+
 ### Basic Syntax
 
-When using the CommandBox CLI, you can run the scanner directly:
-
-```bash
-iescanner directory <path>
+```
+iescanner [directory=path] [format=csv|json|html] [output=filepath] [verbose=true|false] [reloadPatterns=true|false]
 ```
 
-You don't need to prefix commands with `box` when you're already in the CommandBox shell.
+Parameters use `name=value` syntax with no dashes. All parameters are optional.
+
+### Parameters
+
+| Parameter        | Type    | Default                          | Description                                                        |
+|------------------|---------|----------------------------------|--------------------------------------------------------------------|
+| `directory`      | string  | `.` (current directory)          | Path to scan                                                       |
+| `format`         | string  | `csv`                            | Output format: `csv`, `json`, or `html`                            |
+| `output`         | string  | `ie-scan-[timestamp].[format]`   | Output file path (absolute or relative to CWD)                     |
+| `extensions`     | string  | `cfm,cfc,js,html,htm`            | Comma-separated file extensions to scan, no dots                   |
+| `patterns`       | string  | *(auto-locate config/patterns.json)* | Absolute path to a custom patterns JSON file                   |
+| `verbose`        | boolean | `false`                          | Show each file as it is scanned                                    |
+| `reloadPatterns` | boolean | `false`                          | Force reload of the default patterns.json, clearing the cache      |
+| `help`           | boolean | `false`                          | Display inline help                                                |
+
+> NOTE: When `output` is a relative path or uses the default timestamped filename, the file is written to the CommandBox working directory. Use an absolute path to control the exact location.
+
+> NOTE: When `patterns` is provided, the pattern cache is bypassed entirely so that multiple scans in the same session can use different pattern files without interference. `reloadPatterns` only affects the default patterns.json cache.
 
 ### Available Commands
 
-#### Scan a Directory
+#### Scan the Current Directory
 
-Scan a specific directory for IE-specific patterns:
-
-```bash
-iescanner directory /path/to/your/project
+```
+iescanner
 ```
 
-Or using a Windows path:
+#### Scan a Specific Directory
 
-```bash
-iescanner directory C:\Documents\projects
+```
+iescanner directory=C:\projects\myapp
+iescanner directory=/var/www/myapp
 ```
 
-#### Scan Current Directory
+#### Scan and Generate an HTML Report
 
-If no directory is specified, the scanner will use the current working directory:
-
-```bash
-iescanner directory
+```
+iescanner directory=C:\projects\myapp format=html output=C:\reports\ie-report.html
 ```
 
-#### Specify Output Format
+#### Scan and Generate a JSON Report
 
-Generate different output formats for the scan results:
-
-```bash
-iescanner directory /path/to/project --output=json
-iescanner directory /path/to/project --output=html
-iescanner directory /path/to/project --output=csv
+```
+iescanner directory=C:\projects\myapp format=json output=C:\reports\ie-scan.json
 ```
 
-#### Save Output to File
+#### Scan Additional File Types
 
-Direct the output to a specific file:
+Add extensions beyond the default set. Pass a comma-separated list with no dots:
 
-```bash
-iescanner directory /path/to/project --output=json --file=results.json
-iescanner directory /path/to/project --output=html --file=report.html
+```
+iescanner directory=C:\projects\myapp extensions=cfm,cfc,js,html,htm,pl,py
+```
+
+Remove extensions to narrow the scan. For example, ColdFusion source files only:
+
+```
+iescanner directory=C:\projects\myapp extensions=cfm,cfc
+```
+
+#### Use a Custom Patterns File
+
+Point the scanner at any patterns JSON file instead of the default `config/patterns.json`.
+The pattern cache is bypassed automatically when this parameter is used:
+
+```
+iescanner directory=C:\projects\myapp patterns=D:\config\solr-patterns.json format=html output=C:\reports\solr-report.html
+```
+
+#### Show Verbose File-by-File Progress
+
+```
+iescanner directory=C:\projects\myapp verbose=true
+```
+
+#### Force Reload Patterns from JSON
+
+Use this after replacing `config/patterns.json` to clear the cached patterns:
+
+```
+iescanner directory=C:\projects\myapp reloadPatterns=true
+```
+
+#### Show Inline Help
+
+```
+iescanner help=true
 ```
 
 ## Configuration
 
 ### Pattern Configuration
 
-While the IEScanner module includes default patterns embedded in the `iescanner.cfc` object, the **preferred method** is to use the `config/patterns.json` file for pattern configuration. This approach provides better maintainability and allows for easy customization without modifying the core module code.
+IEScanner includes a minimal set of fallback patterns hardcoded in `commands/iescanner.cfc`. The preferred method is to use the `config/patterns.json` file. Patterns loaded from JSON take precedence over the hardcoded defaults. If `patterns.json` cannot be found, the scanner falls back to the hardcoded set automatically.
 
 #### Using config/patterns.json (Recommended)
 
-Create or modify the `config/patterns.json` file in your module root:
+The file is a flat JSON array. Each element requires `pattern` (a regex string), `severity`, `description`, and `recommendation`:
 
 ```json
-{
-    "patterns": [
-        {
-            "name": "ActiveXObject",
-            "pattern": "new\\s+ActiveXObject",
-            "description": "ActiveX object instantiation",
-            "severity": "critical",
-            "replacement": "Use modern alternatives like XMLHttpRequest or fetch API"
-        },
-        {
-            "name": "document.all",
-            "pattern": "document\\.all",
-            "description": "IE-specific document.all usage",
-            "severity": "high",
-            "replacement": "Use document.getElementById() or querySelector()"
-        },
-        {
-            "name": "attachEvent",
-            "pattern": "attachEvent\\s*\\(",
-            "description": "IE-specific event attachment",
-            "severity": "critical",
-            "replacement": "Use addEventListener() instead"
-        },
-        {
-            "name": "msPrefix",
-            "pattern": "-ms-",
-            "description": "IE vendor prefix in CSS",
-            "severity": "medium",
-            "replacement": "Use standard CSS properties or autoprefixer"
-        }
-    ]
-}
+[
+    {
+        "pattern": "ActiveXObject",
+        "severity": "CRITICAL",
+        "description": "ActiveX object usage",
+        "recommendation": "Remove ActiveX dependencies"
+    },
+    {
+        "pattern": "document\\.all",
+        "severity": "HIGH",
+        "description": "IE-specific document.all",
+        "recommendation": "Use document.getElementById() or querySelector()"
+    },
+    {
+        "pattern": "attachEvent\\s*\\(",
+        "severity": "HIGH",
+        "description": "IE-specific attachEvent",
+        "recommendation": "Use addEventListener()"
+    },
+    {
+        "pattern": "<cfsearch",
+        "severity": "CRITICAL",
+        "description": "CFSEARCH tag - references a Solr collection",
+        "recommendation": "Verify the named Solr collection exists in CF Admin"
+    }
+]
 ```
+
+> NOTE: The `<` character in tag patterns such as `<cfsearch` is automatically converted internally by the scanner. You do not need to escape it.
+
+> NOTE: All pattern matching is case-insensitive. The `(?i)` inline flag is not required.
 
 #### Pattern Structure
 
-Each pattern in the configuration should include:
+| Field            | Required | Description                                                    |
+|------------------|----------|----------------------------------------------------------------|
+| `pattern`        | Yes      | Regular expression to match against each line of source code   |
+| `severity`       | Yes      | `CRITICAL`, `HIGH`, `MEDIUM`, or `LOW`                         |
+| `description`    | Yes      | Human-readable description of what the pattern detects         |
+| `recommendation` | Yes      | Suggested remediation action                                   |
 
-- **name**: Unique identifier for the pattern
-- **pattern**: Regular expression pattern to match
-- **description**: Human-readable description of what this pattern detects
-- **severity**: Impact level (`critical`, `high`, `medium`, `low`)
-  - **critical**: Will cause complete failure - no fallback after 2029
-  - **high**: Major functionality broken but may have workarounds
-  - **medium**: Features degraded but application remains functional
-  - **low**: Minor issues or cosmetic problems
-- **replacement**: Suggested modern alternative
+Severity meaning:
 
-### Global Settings
+- **CRITICAL**: Will cause complete failure after 2029 with no fallback
+- **HIGH**: Major functionality broken but may have workarounds
+- **MEDIUM**: Features degraded but application remains functional
+- **LOW**: Minor issues or cosmetic problems
 
-You can configure global scanner settings via CommandBox config:
+### Using a Custom Patterns File
 
-```bash
-# Set default output format
-config set modules.iescanner.defaultOutput=json
+Pass an absolute path to any patterns JSON file using the `patterns` parameter. The scanner
+will load that file directly, bypassing the default `config/patterns.json` search and the
+pattern cache:
 
-# Set default file extensions to scan
-config set modules.iescanner.extensions=".cfm,.cfc,.js,.html"
-
-# Enable/disable recursive scanning
-config set modules.iescanner.recursive=true
-
-# Set scan depth limit
-config set modules.iescanner.maxDepth=10
 ```
+iescanner directory=C:\projects\myapp patterns=D:\config\solr-patterns.json format=html output=C:\reports\solr-report.html
+```
+
+Multiple scans in the same CommandBox session can each use a different patterns file without
+interfering with one another. The default patterns cache is unaffected.
 
 ## Pattern Detection
 
-The IEScanner detects various Internet Explorer-specific patterns that should be removed or updated for modern browser compatibility. Here are the main categories:
+The IEScanner detects various Internet Explorer-specific patterns that should be removed or updated for modern browser compatibility.
 
 ### Browser Detection Patterns
 
 | Pattern | Severity | Why Remove | Modern Alternative |
 |---------|----------|------------|-------------------|
-| `navigator.userAgent` checks for "MSIE" or "Trident" | Critical | IE is no longer supported; browser sniffing is unreliable | Use feature detection instead |
-| `document.documentMode` | Critical | IE-specific property | Use feature detection |
-| `window.MSStream` | Critical | IE-specific stream object | Not needed in modern browsers |
+| `navigator.userAgent` checks for "MSIE" or "Trident" | CRITICAL | IE is no longer supported; browser sniffing is unreliable | Use feature detection instead |
+| `document.documentMode` | CRITICAL | IE-specific property | Use feature detection |
+| `window.MSStream` | CRITICAL | IE-specific stream object | Not needed in modern browsers |
 
 ### DOM Manipulation Patterns
 
 | Pattern | Severity | Why Remove | Modern Alternative |
 |---------|----------|------------|-------------------|
-| `document.all` | High | Non-standard, IE-specific collection | Use `document.getElementById()` or `querySelector()` |
-| `attachEvent()` / `detachEvent()` | Critical | IE-specific event handling | Use `addEventListener()` / `removeEventListener()` |
-| `event.srcElement` | High | IE-specific property | Use `event.target` |
-| `event.returnValue` | High | IE-specific property | Use `event.preventDefault()` |
+| `document.all` | HIGH | Non-standard, IE-specific collection | Use `document.getElementById()` or `querySelector()` |
+| `attachEvent()` / `detachEvent()` | CRITICAL | IE-specific event handling | Use `addEventListener()` / `removeEventListener()` |
+| `event.srcElement` | HIGH | IE-specific property | Use `event.target` |
+| `event.returnValue` | HIGH | IE-specific property | Use `event.preventDefault()` |
 
 ### ActiveX and Proprietary Features
 
 | Pattern | Severity | Why Remove | Modern Alternative |
 |---------|----------|------------|-------------------|
-| `ActiveXObject` | Critical | Security risk, IE-only technology | Use XMLHttpRequest, fetch, or native APIs |
-| `window.clipboardData` | High | IE-specific clipboard API | Use modern Clipboard API |
-| `document.selection` | High | IE-specific text selection | Use `window.getSelection()` |
+| `ActiveXObject` | CRITICAL | Security risk, IE-only technology | Use XMLHttpRequest, fetch, or native APIs |
+| `window.clipboardData` | HIGH | IE-specific clipboard API | Use modern Clipboard API |
+| `document.selection` | HIGH | IE-specific text selection | Use `window.getSelection()` |
 
 ### CSS and Styling
 
 | Pattern | Severity | Why Remove | Modern Alternative |
 |---------|----------|------------|-------------------|
-| `filter:` CSS property | Medium | IE-specific filters | Use standard CSS3 properties |
-| `behavior:` CSS property | Critical | IE-specific behaviors | Use JavaScript or CSS3 |
-| `expression()` in CSS | Critical | Security risk, IE-only | Use modern CSS or JavaScript |
-| `-ms-` prefixed properties | Medium | IE-specific vendor prefix | Use standard properties or autoprefixer |
+| `filter:` CSS property | MEDIUM | IE-specific filters | Use standard CSS3 properties |
+| `behavior:` CSS property | CRITICAL | IE-specific behaviors | Use JavaScript or CSS3 |
+| `expression()` in CSS | CRITICAL | Security risk, IE-only | Use modern CSS or JavaScript |
+| `-ms-` prefixed properties | MEDIUM | IE-specific vendor prefix | Use standard properties or autoprefixer |
 
 ### Conditional Comments
 
 | Pattern | Severity | Why Remove | Modern Alternative |
 |---------|----------|------------|-------------------|
-| `<!--[if IE]>` | Critical | IE conditional comments | Use feature detection or progressive enhancement |
-| `@cc_on` | Critical | Conditional compilation | Remove entirely, not needed |
+| `<!--[if IE]>` | CRITICAL | IE conditional comments | Use feature detection or progressive enhancement |
+| `@cc_on` | CRITICAL | Conditional compilation | Remove entirely, not needed |
 
 ### AJAX and Network
 
 | Pattern | Severity | Why Remove | Modern Alternative |
 |---------|----------|------------|-------------------|
-| `XDomainRequest` | Critical | IE-specific CORS handling | Use XMLHttpRequest with proper CORS |
-| `window.XMLHttpRequest` checks | Medium | Obsolete compatibility checks | XMLHttpRequest is universally supported |
+| `XDomainRequest` | CRITICAL | IE-specific CORS handling | Use XMLHttpRequest with proper CORS |
+| `window.XMLHttpRequest` checks | MEDIUM | Obsolete compatibility checks | XMLHttpRequest is universally supported |
 
 ## Output Formats
 
-### Console Output (Default)
+### Console Output
+
+The scanner always writes a summary to the console regardless of the output format selected:
 
 ```
-IEScanner Results
-=================
-Scanning directory: /path/to/project
-Files scanned: 142
-Issues found: 23
++==========================================+
+|   IE Legacy Code Scanner - v1.1.0       |
++==========================================+
 
-File: /path/to/project/js/legacy.js
-  Line 45: ActiveXObject usage detected
-  Line 78: document.all reference found
-  Line 102: attachEvent() usage detected
+Directory : C:\projects\myapp\
+Output    : ie-scan-20260330120000.csv
+Format    : csv
+Extensions: cfm,cfc,js,html,htm
+Patterns  : config/patterns.json (default)
 
-File: /path/to/project/css/old-styles.css
-  Line 12: IE-specific filter property
-  Line 34: -ms- vendor prefix detected
+Searching for files...
+Found 142 files to scan
 
-Summary:
-  Critical severity: 12 issues
-  High severity: 8 issues
-  Medium severity: 10 issues
-  Low severity: 5 issues
+Scanning files...
+................................................... 100%
+
+Report saved: ie-scan-20260330120000.csv
+
+[SUCCESS] Scan Complete!
+
+========================================
+SUMMARY:
+Files scanned    : 142
+Files with issues: 23
+Total issues     : 35
+Scan time        : 4.21 seconds
+
+Issues by Severity:
+  CRITICAL: 12
+  HIGH    : 8
+  MEDIUM  : 10
+  LOW     : 5
+========================================
+```
+
+### CSV Output (Default)
+
+Columns: `File`, `Line`, `Severity`, `Description`, `Recommendation`
+
+```
+File,Line,Severity,Description,Recommendation
+"js/legacy.js",45,HIGH,"IE-specific attachEvent","Use addEventListener()"
+"js/legacy.js",78,HIGH,"IE-specific document.all","Use document.getElementById() or querySelector()"
+"css/old-styles.css",12,MEDIUM,"IE CSS filter","Use CSS3 opacity"
 ```
 
 ### JSON Output
 
 ```json
 {
-    "scanDate": "2025-09-29T10:30:00Z",
-    "directory": "/path/to/project",
-    "filesScanned": 142,
-    "totalIssues": 23,
-    "results": [
+    "scanDate": "2026-03-30 12:00:00",
+    "totalIssues": 35,
+    "issues": [
         {
-            "file": "/path/to/project/js/legacy.js",
-            "issues": [
-                {
-                    "line": 45,
-                    "column": 12,
-                    "pattern": "ActiveXObject",
-                    "code": "var xhr = new ActiveXObject('Microsoft.XMLHTTP');",
-                    "severity": "high",
-                    "suggestion": "Use XMLHttpRequest instead"
-                }
-            ]
+            "file": "js/legacy.js",
+            "line": 45,
+            "severity": "HIGH",
+            "description": "IE-specific attachEvent",
+            "recommendation": "Use addEventListener()"
         }
-    ],
-    "summary": {
-        "critical": 12,
-        "high": 8,
-        "medium": 10,
-        "low": 5
-    }
+    ]
 }
 ```
 
 ### HTML Output
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <title>IEScanner Report</title>
-    <style>
-        .high { color: red; }
-        .medium { color: orange; }
-        .low { color: yellow; }
-    </style>
-</head>
-<body>
-    <h1>IE Compatibility Scan Report</h1>
-    <p>Scan Date: September 29, 2025</p>
-    <table>
-        <thead>
-            <tr>
-                <th>File</th>
-                <th>Line</th>
-                <th>Issue</th>
-                <th>Severity</th>
-                <th>Recommendation</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr class="high">
-                <td>/path/to/project/js/legacy.js</td>
-                <td>45</td>
-                <td>ActiveXObject usage</td>
-                <td>High</td>
-                <td>Replace with XMLHttpRequest</td>
-            </tr>
-        </tbody>
-    </table>
-</body>
-</html>
-```
-
-### CSV Output
-
-```csv
-File,Line,Pattern,Severity,Code,Suggestion
-"/path/to/project/js/legacy.js",45,"ActiveXObject","high","var xhr = new ActiveXObject('Microsoft.XMLHTTP');","Use XMLHttpRequest instead"
-"/path/to/project/js/legacy.js",78,"document.all","medium","if (document.all) {","Use document.getElementById() or querySelector()"
-```
+Generates a self-contained HTML report with a summary, severity stat cards, and a full issues table. Open the file directly in any browser.
 
 ## Examples
 
-### Example 1: Basic Directory Scan
+### Example 1: Basic Scan of Current Directory
 
-Scan your current project for IE-specific patterns:
-
-```bash
-cd /path/to/your/project
-iescanner directory
+```
+iescanner
 ```
 
-### Example 2: Scan with JSON Output
+### Example 2: Scan a Specific Directory, CSV Output
 
-Generate a JSON report for CI/CD integration:
-
-```bash
-iescanner directory /var/www/myapp --output=json --file=ie-scan-results.json
+```
+iescanner directory=C:\projects\myapp
 ```
 
-### Example 3: Scan Specific File Types
+The CSV report is saved to the CommandBox working directory with a timestamped filename such as `ie-scan-20260330120000.csv`.
 
-Scan only JavaScript and CSS files:
+### Example 3: HTML Report Saved to an Absolute Path
 
-```bash
-iescanner directory /path/to/project --extensions=".js,.css"
+```
+iescanner directory=C:\projects\myapp format=html output=C:\reports\ie-report.html
 ```
 
-### Example 4: Non-Recursive Scan
+### Example 4: JSON Report Saved to Desktop
 
-Scan only the top-level directory:
-
-```bash
-iescanner directory /path/to/project --recursive=false
+```
+iescanner directory=C:\projects\myapp format=json output=C:\Users\george.murphy.ctr\Desktop\ie-scan.json
 ```
 
-### Example 5: Custom Pattern Configuration
+### Example 5: Add File Types to the Scan
 
-Using a custom patterns file:
+Extend the default set to also catch Perl and Python files:
 
-```bash
-iescanner directory /path/to/project --patterns=/path/to/custom-patterns.json
+```
+iescanner directory=C:\projects\myapp extensions=cfm,cfc,js,html,htm,pl,py
 ```
 
-### Example 6: Verbose Output
+### Example 6: Narrow the Scan to ColdFusion Files Only
 
-Get detailed information during scanning:
-
-```bash
-iescanner directory /path/to/project --verbose=true
+```
+iescanner directory=C:\projects\myapp extensions=cfm,cfc
 ```
 
-### Example 7: Exclude Directories
+### Example 7: Use a Custom Patterns File
 
-Scan while excluding certain directories:
+Scan for Solr collection references using a dedicated patterns file:
 
-```bash
-iescanner directory /path/to/project --exclude="node_modules,vendor,dist"
+```
+iescanner directory=C:\projects\myapp patterns=D:\config\solr-patterns.json format=html output=C:\reports\solr-report.html
 ```
 
-### Example 8: Generate HTML Report
+### Example 8: Run Two Different Scans Back-to-Back in the Same Session
 
-Create an HTML report for team review:
+Because `patterns` bypasses the cache, each scan loads its own file independently:
 
-```bash
-iescanner directory C:\projects\legacy-app --output=html --file=ie-report.html
+```
+iescanner directory=C:\projects\myapp patterns=D:\config\ie-patterns.json format=html output=C:\reports\ie-report.html
+iescanner directory=C:\projects\myapp patterns=D:\config\solr-patterns.json format=html output=C:\reports\solr-report.html
 ```
 
-## API Reference
+### Example 9: Verbose Scan Showing Each File
 
-### iescanner.scan()
-
-Programmatically use the scanner in your ColdFusion code:
-
-```cfscript
-// Get the scanner instance
-scanner = getInstance("iescanner@iescanner");
-
-// Configure scan options
-options = {
-    directory: "/path/to/scan",
-    recursive: true,
-    extensions: [".cfm", ".cfc", ".js", ".css", ".html"],
-    exclude: ["node_modules", "vendor"],
-    patterns: "config/patterns.json"
-};
-
-// Perform scan
-results = scanner.scan(options);
-
-// Process results
-for (result in results.files) {
-    writeOutput("File: #result.path# - Issues: #result.issues.len()#<br>");
-}
+```
+iescanner directory=C:\projects\myapp verbose=true
 ```
 
-### Custom Pattern Loader
+### Example 10: Force Reload the Default Patterns After Editing patterns.json
 
-```cfscript
-// Load custom patterns
-patterns = getInstance("PatternLoader@iescanner");
-customPatterns = patterns.load("/path/to/patterns.json");
-
-// Add custom pattern dynamically
-patterns.add({
-    name: "customCheck",
-    pattern: "myCustomPattern",
-    severity: "medium",
-    description: "Custom IE pattern check"
-});
 ```
+iescanner directory=C:\projects\myapp reloadPatterns=true
+```
+
+## Beyond IE Detection
+
+While IEScanner was built to find IE-specific code, the pattern engine is general-purpose. Any text pattern expressible as a regular expression can be dropped into `config/patterns.json` and scanned across your entire ColdFusion codebase. This makes the tool useful for a broad range of code audits beyond browser compatibility.
+
+> NOTE: The scanner searches `*.cfm`, `*.cfc`, `*.js`, `*.html`, and `*.htm` files. It will not walk into directories containing only `.pl`, `.swf`, or other non-web-source files. The patterns below detect references to those technologies within your ColdFusion source — for example, a `<cfinclude>` that pulls in a Perl script, an `<object>` tag embedding a SWF, or a path string pointing to a `.pl` endpoint.
+
+### Use Case Examples
+
+#### Legacy Plugin and Technology Audit
+
+Find references to deprecated or end-of-life technologies embedded in your source:
+
+```json
+[
+    {
+        "pattern": "\\.swf[\"'\\s>]",
+        "severity": "CRITICAL",
+        "description": "Adobe Flash SWF reference",
+        "recommendation": "Flash reached end-of-life December 2020. Remove all SWF embeds and replace with HTML5 equivalents."
+    },
+    {
+        "pattern": "\\.pl[\"'\\s?]",
+        "severity": "HIGH",
+        "description": "Perl script reference (.pl)",
+        "recommendation": "Identify whether this Perl endpoint is still active. Consider migrating to ColdFusion or a supported language."
+    },
+    {
+        "pattern": "\\.cgi[\"'\\s?]",
+        "severity": "HIGH",
+        "description": "CGI script reference",
+        "recommendation": "CGI scripts are a legacy execution model. Migrate to ColdFusion components or a modern API."
+    },
+    {
+        "pattern": "classid\\s*=",
+        "severity": "CRITICAL",
+        "description": "ActiveX classid attribute (object embed)",
+        "recommendation": "ActiveX object embeds are IE-only and non-functional in all modern browsers. Remove entirely."
+    },
+    {
+        "pattern": "application/x-shockwave-flash",
+        "severity": "CRITICAL",
+        "description": "Flash MIME type reference",
+        "recommendation": "Flash is end-of-life. Remove all Flash MIME references and replace with HTML5 media."
+    }
+]
+```
+
+#### Deprecated ColdFusion Tag Audit
+
+Find ColdFusion UI tags deprecated in CF2021 and removed in CF2025:
+
+```json
+[
+    {
+        "pattern": "<cfform",
+        "severity": "HIGH",
+        "description": "CFFORM tag - deprecated ColdFusion UI",
+        "recommendation": "Replace with a standard HTML form."
+    },
+    {
+        "pattern": "<cfgrid",
+        "severity": "HIGH",
+        "description": "CFGRID tag - deprecated ColdFusion UI",
+        "recommendation": "Replace with a modern JavaScript grid such as AG-Grid or DataTables."
+    },
+    {
+        "pattern": "<cftree",
+        "severity": "HIGH",
+        "description": "CFTREE tag - deprecated ColdFusion UI",
+        "recommendation": "Replace with a JavaScript tree component such as jsTree."
+    },
+    {
+        "pattern": "<cfwindow",
+        "severity": "HIGH",
+        "description": "CFWINDOW tag - deprecated ColdFusion UI",
+        "recommendation": "Replace with a CSS/JavaScript modal library."
+    },
+    {
+        "pattern": "<cfajaxproxy",
+        "severity": "HIGH",
+        "description": "CFAJAXPROXY tag - deprecated ColdFusion AJAX",
+        "recommendation": "Replace with the fetch API or XMLHttpRequest."
+    }
+]
+```
+
+#### Solr Collection Audit
+
+Find all code that references ColdFusion Solr collections to verify they exist in CF Admin:
+
+```json
+[
+    {
+        "pattern": "<cfcollection",
+        "severity": "CRITICAL",
+        "description": "CFCOLLECTION tag - references a Solr collection",
+        "recommendation": "Verify the named Solr collection exists in CF Admin. If no collection is configured, this will fail at runtime."
+    },
+    {
+        "pattern": "<cfsearch",
+        "severity": "CRITICAL",
+        "description": "CFSEARCH tag - executes a Solr collection search",
+        "recommendation": "Verify the target Solr collection exists in CF Admin. If no collection is configured, all searches will throw a runtime error."
+    },
+    {
+        "pattern": "<cfindex",
+        "severity": "CRITICAL",
+        "description": "CFINDEX tag - indexes content into a Solr collection",
+        "recommendation": "Verify the target Solr collection exists in CF Admin. If no collection is configured, indexing operations will fail."
+    },
+    {
+        "pattern": "collectionSearch\\s*\\(",
+        "severity": "CRITICAL",
+        "description": "collectionSearch() CFScript function - searches a Solr collection",
+        "recommendation": "Verify the named Solr collection exists in CF Admin."
+    },
+    {
+        "pattern": "collectionIndex\\s*\\(",
+        "severity": "CRITICAL",
+        "description": "collectionIndex() CFScript function - indexes content into a Solr collection",
+        "recommendation": "Verify the target Solr collection exists in CF Admin."
+    },
+    {
+        "pattern": "collectionCreate\\s*\\(",
+        "severity": "HIGH",
+        "description": "collectionCreate() CFScript function - creates a Solr collection programmatically",
+        "recommendation": "Confirm this call is intentional and that CF Admin has Solr configured."
+    }
+]
+```
+
+#### Hard-coded Credential and Sensitive Value Audit
+
+Find patterns commonly associated with hard-coded credentials or environment-specific values left in source:
+
+```json
+[
+    {
+        "pattern": "password\\s*=\\s*[\"'][^\"']+[\"']",
+        "severity": "CRITICAL",
+        "description": "Possible hard-coded password value",
+        "recommendation": "Move credentials to environment variables or a secrets manager. Never hard-code passwords in source."
+    },
+    {
+        "pattern": "datasource\\s*=\\s*[\"'][^\"']+[\"']",
+        "severity": "MEDIUM",
+        "description": "Hard-coded datasource name",
+        "recommendation": "Consider centralizing datasource names in Application.cfc or a config component rather than scattering them across files."
+    },
+    {
+        "pattern": "192\\.168\\.|10\\.0\\.|172\\.16\\.",
+        "severity": "MEDIUM",
+        "description": "Hard-coded private IP address",
+        "recommendation": "Replace with a named hostname or environment variable to avoid environment-specific failures."
+    }
+]
+```
+
+### Tips for Writing Custom Patterns
+
+- **Keep patterns specific.** A pattern that is too broad, such as matching `password` anywhere, will produce a high volume of false positives. Anchor or qualify patterns where possible.
+- **Use `severity` to prioritize.** Run with `CRITICAL` and `HIGH` first, fix those, then address `MEDIUM` and `LOW` in a follow-up pass.
+- **One concern per pattern.** Separate patterns are easier to read in reports and easier to maintain than a single complex regex that catches multiple things.
+- **Test regex before committing.** CF uses Java-compatible regex. Tools such as regex101.com with the Java flavor selected are useful for validating patterns before adding them to the JSON file.
+- **Remember the cache.** After updating `patterns.json`, run with `reloadPatterns=true` on the first scan of the session or the old patterns will be used.
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Scanner not finding files**: Ensure the path exists and you have read permissions
-2. **Pattern not matching**: Check regex escaping in patterns.json
-3. **Output file not created**: Verify write permissions in the target directory
-4. **Performance issues**: Use `--exclude` to skip large directories like node_modules
-
-### Debug Mode
-
-Enable debug output for troubleshooting:
-
-```bash
-iescanner directory /path/to/project --debug=true
-```
+1. **Scanner not finding files**: Ensure the path exists and you have read permissions. Check which extensions are being scanned — use `extensions=cfm,cfc,js,html,htm` to confirm the default, or expand it to include additional types.
+2. **Report saved to unexpected location**: If `output` is a relative path or uses the default timestamped name, the file is written to the CommandBox working directory, not the scanned directory. Use an absolute path.
+3. **Default pattern changes not taking effect**: The scanner caches the default `patterns.json` for the session. Run with `reloadPatterns=true` after editing it.
+4. **Custom patterns file not loading**: Verify the path passed to `patterns=` is absolute and the file exists. The scanner will print an error and exit if the file cannot be found.
+5. **Pattern not matching**: Check regex escaping in the JSON file. Remember that `<` in tag patterns such as `<cfsearch` is automatically converted internally — you do not need to escape it.
 
 ## Contributing
 
-Contributions are welcome! Please submit pull requests with:
+Contributions are welcome. Please submit pull requests with:
 
-1. Updated patterns in config/patterns.json
+1. Updated patterns in `config/patterns.json`
 2. Test cases for new patterns
 3. Documentation updates
 
@@ -555,10 +696,20 @@ For issues, questions, or suggestions, please visit: https://github.com/murpg/ie
 
 ## Changelog
 
+### Version 1.1.0
+
+- Added `extensions` parameter — comma-separated list of file extensions to scan with no dots (default: `cfm,cfc,js,html,htm`)
+- Added `patterns` parameter — absolute path to a custom patterns JSON file, bypasses default search and pattern cache
+- Refactored pattern loading into `findDefaultPatternsFile()` and `loadPatternsFromFile()` for cleaner separation
+- Console output now shows active extensions and patterns file on every run
+- Help text updated to reflect all parameters
+
 ### Version 1.0.0
+
 - Initial release
 - Core pattern detection for IE-specific code
-- Multiple output formats (console, JSON, HTML, CSV)
-- Configurable patterns via config/patterns.json
-- Recursive directory scanning
-- File extension filtering
+- Multiple output formats (CSV, JSON, HTML)
+- Configurable patterns via `config/patterns.json` with hardcoded fallback
+- Recursive directory scanning for `.cfm`, `.cfc`, `.js`, `.html`, `.htm`
+- Case-insensitive pattern matching via `reFindNoCase()`
+- Pattern cache with `reloadPatterns` flag to force refresh

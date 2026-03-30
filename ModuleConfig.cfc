@@ -6,7 +6,7 @@ component {
 
 	this.title          = "CommandBox IE Scanner";
 	this.author         = "George Murphy";
-	this.version        = "1.0.0";
+	this.version        = "1.1.0";
 	this.cfmapping      = "commandbox-iescanner";
 	this.modelNamespace = "commandbox-iescanner";
 	this.entryPoint     = "iescanner";
