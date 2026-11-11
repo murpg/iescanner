@@ -1,15 +1,15 @@
 {
-    "name": "commandbox-iescanner",
-    "version": "1.1.0",
-    "type": "commandbox-modules",
-    "slug": "commandbox-iescanner",
-    "shortDescription": "A CommandBox module to scan CFML for IE-specific code patterns.",
-    "keywords": "commandbox-iescanner,iescanner",
-    "homepage": "https://github.com/murpg/iescanner",
-    "documentation": "https://github.com/murpg/iescanner",
-    "repository": {
-        "type": "github",
-        "URL": "https://github.com/murpg/iescanner.git"
+    "name":"commandbox-iescanner",
+    "version":"1.2.0",
+    "type":"commandbox-modules",
+    "slug":"commandbox-iescanner",
+    "shortDescription":"A CommandBox module to scan CFML for IE-specific code patterns.",
+    "keywords":"commandbox-iescanner,iescanner",
+    "homepage":"https://github.com/murpg/iescanner",
+    "documentation":"https://github.com/murpg/iescanner",
+    "repository":{
+        "type":"github",
+        "URL":"https://github.com/murpg/iescanner.git"
     },
-    "location": "forgeboxStorage"
+    "location":"forgeboxStorage"
 }
