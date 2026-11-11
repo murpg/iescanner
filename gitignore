@@ -1,0 +1,7 @@
+/.vscode
+README.docx
+
+# Scanner output reports - never commit or package these
+ie-scan-*.csv
+ie-scan-*.json
+ie-scan-*.html

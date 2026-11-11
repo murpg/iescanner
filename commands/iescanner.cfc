@@ -112,7 +112,7 @@ component extends="commandbox.system.BaseCommand" {
 		/* Start scanning */
 		print.line();
 		print.line( "+==========================================+" );
-		print.line( "|   IE Legacy Code Scanner - v1.1.0       |" );
+		print.line( "|   IE Legacy Code Scanner - v1.2.1       |" );
 		print.line( "+==========================================+" );
 		print.line();
 		print.line( "Directory : #arguments.directory#" );

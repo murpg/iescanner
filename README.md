@@ -722,6 +722,11 @@ For issues, questions, or suggestions, please visit: https://github.com/murpg/ie
 
 ## Changelog
 
+### Version 1.2.1
+
+- Fixed the console banner to report the correct version (was still printing v1.1.0)
+- Excluded scanner output reports (`ie-scan-*.csv`, `ie-scan-*.json`, `ie-scan-*.html`) from the published package
+
 ### Version 1.2.0
 
 - Added a bundled `config/cf2023-to-cf2025-patterns.json` patterns file for auditing a ColdFusion 2023 codebase ahead of an upgrade to ColdFusion 2025 (64 patterns)
