@@ -2,6 +2,8 @@
 
 A CommandBox module that scans ColdFusion applications to identify Internet Explorer-specific code patterns that need to be updated for modern browser compatibility.
 
+> NEW in v1.2.0: IEScanner now ships a bundled patterns file for ColdFusion deprecated and removed tags, functions, and algorithms — ready for auditing a CF2023 codebase ahead of a ColdFusion 2025 upgrade. See [Bundled CF2023 -> CF2025 Migration Patterns](#bundled-cf2023---cf2025-migration-patterns).
+
 ## WARNING: Internet Explorer Mode EOL in 2029
 
 **Your IE-dependent applications will completely stop working in 2029. This is not optional - there will be no fallback.**
@@ -304,6 +306,24 @@ iescanner directory=C:\projects\myapp patterns=D:\config\solr-patterns.json form
 Multiple scans in the same CommandBox session can each use a different patterns file without
 interfering with one another. The default patterns cache is unaffected.
 
+### Bundled CF2023 -> CF2025 Migration Patterns
+
+As of v1.2.0, the module ships a ready-made patterns file for auditing a ColdFusion 2023
+codebase ahead of an upgrade to ColdFusion 2025. It lives alongside the default patterns at
+`config/cf2023-to-cf2025-patterns.json` and flags the tags, functions, attributes, and
+encryption algorithms removed or deprecated in CF2025 — in both tag form (`<cftree ...>`) and
+cfscript form (`cftree( ... )`).
+
+Point the `patterns` parameter at its absolute path on disk. For example, from a local working
+copy of this repository:
+
+```
+iescanner directory=C:\projects\myapp patterns=D:\projects\refactored\gitlab-personal\forgebox-module\iescanner\config\cf2023-to-cf2025-patterns.json format=html output=C:\reports\cf2025-migration.html
+```
+
+Because `patterns` bypasses the default pattern cache, this scan can run back-to-back with a
+normal IE scan in the same CommandBox session without a reload.
+
 ## Pattern Detection
 
 The IEScanner detects various Internet Explorer-specific patterns that should be removed or updated for modern browser compatibility.
@@ -553,6 +573,12 @@ Find references to deprecated or end-of-life technologies embedded in your sourc
 
 Find ColdFusion UI tags deprecated in CF2021 and removed in CF2025:
 
+> NOTE: For a complete, ready-to-run version of this audit, use the bundled
+> `config/cf2023-to-cf2025-patterns.json` file described under
+> [Bundled CF2023 -> CF2025 Migration Patterns](#bundled-cf2023---cf2025-migration-patterns).
+> The five-tag snippet below is a minimal illustration; the bundled file covers the full set of
+> CF2025 removals and deprecations in both tag and cfscript form.
+
 ```json
 [
     {
@@ -695,6 +721,12 @@ This module is open source and available under the MIT License.
 For issues, questions, or suggestions, please visit: https://github.com/murpg/iescanner
 
 ## Changelog
+
+### Version 1.2.0
+
+- Added a bundled `config/cf2023-to-cf2025-patterns.json` patterns file for auditing a ColdFusion 2023 codebase ahead of an upgrade to ColdFusion 2025 (64 patterns)
+- Covers tags, functions, attributes, and encryption algorithms removed or deprecated in CF2025, in both tag form (`<cftree ...>`) and cfscript form (`cftree( ... )`)
+- Documented usage under "Bundled CF2023 -> CF2025 Migration Patterns" with a cross-reference from the Deprecated ColdFusion Tag Audit example
 
 ### Version 1.1.0
 

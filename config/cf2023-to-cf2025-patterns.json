@@ -1,0 +1,386 @@
+[
+    {
+        "pattern": "<cftree",
+        "severity": "CRITICAL",
+        "description": "cftree tag - REMOVED in CF2025 (YUI-based UI tag, deprecated since CF2016)",
+        "recommendation": "Replace with a JavaScript tree component such as jsTree. The tag no longer renders in CF2025."
+    },
+    {
+        "pattern": "(?<![<\\/])cftree\\b",
+        "severity": "CRITICAL",
+        "description": "cftree() cfscript-form - REMOVED in CF2025 (YUI-based UI tag, deprecated since CF2016)",
+        "recommendation": "Replace with a JavaScript tree component such as jsTree. The tag no longer renders in CF2025. (cfscript-form hit: tag written in script syntax.)"
+    },
+    {
+        "pattern": "<cftreeitem",
+        "severity": "CRITICAL",
+        "description": "cftreeitem tag - REMOVED in CF2025 (child of cftree, deprecated since CF11)",
+        "recommendation": "Replace along with its parent cftree using a JavaScript tree component such as jsTree."
+    },
+    {
+        "pattern": "(?<![<\\/])cftreeitem\\b",
+        "severity": "CRITICAL",
+        "description": "cftreeitem() cfscript-form - REMOVED in CF2025 (child of cftree, deprecated since CF11)",
+        "recommendation": "Replace along with its parent cftree using a JavaScript tree component such as jsTree. (cfscript-form hit: tag written in script syntax.)"
+    },
+    {
+        "pattern": "<cfmenu",
+        "severity": "CRITICAL",
+        "description": "cfmenu tag - REMOVED in CF2025 (YUI-based UI tag, deprecated since CF2016)",
+        "recommendation": "Replace with a CSS/JavaScript menu component."
+    },
+    {
+        "pattern": "(?<![<\\/])cfmenu\\b",
+        "severity": "CRITICAL",
+        "description": "cfmenu() cfscript-form - REMOVED in CF2025 (YUI-based UI tag, deprecated since CF2016)",
+        "recommendation": "Replace with a CSS/JavaScript menu component. (cfscript-form hit: tag written in script syntax.)"
+    },
+    {
+        "pattern": "<cfmenuitem",
+        "severity": "CRITICAL",
+        "description": "cfmenuitem tag - REMOVED in CF2025 (child of cfmenu, deprecated since CF2016)",
+        "recommendation": "Replace along with its parent cfmenu using a CSS/JavaScript menu component."
+    },
+    {
+        "pattern": "(?<![<\\/])cfmenuitem\\b",
+        "severity": "CRITICAL",
+        "description": "cfmenuitem() cfscript-form - REMOVED in CF2025 (child of cfmenu, deprecated since CF2016)",
+        "recommendation": "Replace along with its parent cfmenu using a CSS/JavaScript menu component. (cfscript-form hit: tag written in script syntax.)"
+    },
+    {
+        "pattern": "<cfcalendar",
+        "severity": "CRITICAL",
+        "description": "cfcalendar tag - REMOVED in CF2025 (YUI-based UI tag, deprecated since CF2016)",
+        "recommendation": "Replace with an HTML date input (type=date) or a JavaScript date picker such as flatpickr."
+    },
+    {
+        "pattern": "(?<![<\\/])cfcalendar\\b",
+        "severity": "CRITICAL",
+        "description": "cfcalendar() cfscript-form - REMOVED in CF2025 (YUI-based UI tag, deprecated since CF2016)",
+        "recommendation": "Replace with an HTML date input (type=date) or a JavaScript date picker such as flatpickr. (cfscript-form hit: tag written in script syntax.)"
+    },
+    {
+        "pattern": "<cfsprydataset",
+        "severity": "CRITICAL",
+        "description": "cfsprydataset tag - REMOVED in CF2025 (Spry framework UI tag, deprecated since CF2016)",
+        "recommendation": "Spry is dead. Replace with a modern data-binding approach (fetch API plus a JS framework or vanilla DOM)."
+    },
+    {
+        "pattern": "(?<![<\\/])cfsprydataset\\b",
+        "severity": "CRITICAL",
+        "description": "cfsprydataset() cfscript-form - REMOVED in CF2025 (Spry framework UI tag, deprecated since CF2016)",
+        "recommendation": "Spry is dead. Replace with a modern data-binding approach (fetch API plus a JS framework or vanilla DOM). (cfscript-form hit: tag written in script syntax.)"
+    },
+    {
+        "pattern": "<cftooltip",
+        "severity": "CRITICAL",
+        "description": "cftooltip tag - REMOVED in CF2025 (YUI-based UI tag)",
+        "recommendation": "Replace with a CSS/JavaScript tooltip library or native title attributes."
+    },
+    {
+        "pattern": "(?<![<\\/])cftooltip\\b",
+        "severity": "CRITICAL",
+        "description": "cftooltip() cfscript-form - REMOVED in CF2025 (YUI-based UI tag)",
+        "recommendation": "Replace with a CSS/JavaScript tooltip library or native title attributes. (cfscript-form hit: tag written in script syntax.)"
+    },
+    {
+        "pattern": "<cfformitem",
+        "severity": "CRITICAL",
+        "description": "cfformitem tag - REMOVED in CF2025 (Flash/XML form UI tag, deprecated since CF2016)",
+        "recommendation": "Replace with standard HTML form markup."
+    },
+    {
+        "pattern": "(?<![<\\/])cfformitem\\b",
+        "severity": "CRITICAL",
+        "description": "cfformitem() cfscript-form - REMOVED in CF2025 (Flash/XML form UI tag, deprecated since CF2016)",
+        "recommendation": "Replace with standard HTML form markup. (cfscript-form hit: tag written in script syntax.)"
+    },
+    {
+        "pattern": "<cfformgroup",
+        "severity": "CRITICAL",
+        "description": "cfformgroup tag - REMOVED in CF2025 (Flash/XML form UI tag, deprecated since CF2016)",
+        "recommendation": "Replace with standard HTML form markup and CSS layout."
+    },
+    {
+        "pattern": "(?<![<\\/])cfformgroup\\b",
+        "severity": "CRITICAL",
+        "description": "cfformgroup() cfscript-form - REMOVED in CF2025 (Flash/XML form UI tag, deprecated since CF2016)",
+        "recommendation": "Replace with standard HTML form markup and CSS layout. (cfscript-form hit: tag written in script syntax.)"
+    },
+    {
+        "pattern": "<cftable",
+        "severity": "CRITICAL",
+        "description": "cftable tag - REMOVED in CF2025 (legacy table-generation tag, deprecated since CF2016)",
+        "recommendation": "Replace with a cfoutput loop emitting a standard HTML table."
+    },
+    {
+        "pattern": "(?<![<\\/])cftable\\b",
+        "severity": "CRITICAL",
+        "description": "cftable() cfscript-form - REMOVED in CF2025 (legacy table-generation tag, deprecated since CF2016)",
+        "recommendation": "Replace with a cfoutput loop emitting a standard HTML table. (cfscript-form hit: tag written in script syntax.)"
+    },
+    {
+        "pattern": "<cfcol",
+        "severity": "CRITICAL",
+        "description": "cfcol tag - REMOVED in CF2025 (child of cftable, deprecated since CF2016)",
+        "recommendation": "Replace along with its parent cftable using standard HTML table markup."
+    },
+    {
+        "pattern": "(?<![<\\/])cfcol\\b",
+        "severity": "CRITICAL",
+        "description": "cfcol() cfscript-form - REMOVED in CF2025 (child of cftable, deprecated since CF2016)",
+        "recommendation": "Replace along with its parent cftable using standard HTML table markup. (cfscript-form hit: tag written in script syntax.)"
+    },
+    {
+        "pattern": "<cfmediaplayer",
+        "severity": "CRITICAL",
+        "description": "cfmediaplayer tag - REMOVED in CF2025 (Flash-based media tag)",
+        "recommendation": "Replace with the HTML5 audio or video element."
+    },
+    {
+        "pattern": "(?<![<\\/])cfmediaplayer\\b",
+        "severity": "CRITICAL",
+        "description": "cfmediaplayer() cfscript-form - REMOVED in CF2025 (Flash-based media tag)",
+        "recommendation": "Replace with the HTML5 audio or video element. (cfscript-form hit: tag written in script syntax.)"
+    },
+    {
+        "pattern": "<cfclient",
+        "severity": "CRITICAL",
+        "description": "cfclient tag - REMOVED in CF2025 (mobile/client-side CFML, all mobile features removed)",
+        "recommendation": "Rewrite client-side logic in standard JavaScript. All mobile features are gone in CF2025."
+    },
+    {
+        "pattern": "(?<![<\\/])cfclient\\b",
+        "severity": "CRITICAL",
+        "description": "cfclient() cfscript-form - REMOVED in CF2025 (mobile/client-side CFML, all mobile features removed)",
+        "recommendation": "Rewrite client-side logic in standard JavaScript. All mobile features are gone in CF2025. (cfscript-form hit: tag written in script syntax.)"
+    },
+    {
+        "pattern": "<cfindexitem",
+        "severity": "HIGH",
+        "description": "cfindexitem tag - part of removed mobile/legacy feature set in CF2025",
+        "recommendation": "Review and remove. Confirm against the CF2025 removed-features list before migrating."
+    },
+    {
+        "pattern": "(?<![<\\/])cfindexitem\\b",
+        "severity": "HIGH",
+        "description": "cfindexitem() cfscript-form - part of removed mobile/legacy feature set in CF2025",
+        "recommendation": "Review and remove. Confirm against the CF2025 removed-features list before migrating. (cfscript-form hit: tag written in script syntax.)"
+    },
+    {
+        "pattern": "<cfencode",
+        "severity": "CRITICAL",
+        "description": "cfencode / Encoded Templates - REMOVED in CF2025",
+        "recommendation": "Encoded templates are no longer supported. Store source in plain CFML; protect via filesystem and source control instead."
+    },
+    {
+        "pattern": "(?<![<\\/])cfencode\\b",
+        "severity": "CRITICAL",
+        "description": "cfencode() cfscript-form - REMOVED in CF2025",
+        "recommendation": "Encoded templates are no longer supported. Store source in plain CFML; protect via filesystem and source control instead. (cfscript-form hit: tag written in script syntax.)"
+    },
+    {
+        "pattern": "parameterExists\\s*\\(",
+        "severity": "CRITICAL",
+        "description": "parameterExists() function - REMOVED in CF2025 (deprecated since CF6, throws error in CF2025)",
+        "recommendation": "Replace with isDefined() or structKeyExists()."
+    },
+    {
+        "pattern": "htmlEditFormat\\s*\\(",
+        "severity": "CRITICAL",
+        "description": "htmlEditFormat() function - REMOVED in CF2025 (deprecated since CF11)",
+        "recommendation": "Replace with encodeForHTML() for output encoding."
+    },
+    {
+        "pattern": "getTemplatePath\\s*\\(",
+        "severity": "CRITICAL",
+        "description": "getTemplatePath() function - REMOVED in CF2025 (deprecated since CF6)",
+        "recommendation": "Replace with getBaseTemplatePath()."
+    },
+    {
+        "pattern": "threadTerminate\\s*\\(",
+        "severity": "CRITICAL",
+        "description": "threadTerminate() function - REMOVED in CF2025 (JDK21 removed Thread.stop())",
+        "recommendation": "Redesign thread logic to signal cooperative cancellation. Forcible termination is no longer available."
+    },
+    {
+        "pattern": "storeAddACL\\s*\\(",
+        "severity": "CRITICAL",
+        "description": "storeAddACL() function - REMOVED in CF2025 (AWS S3 disabled ACLs for new buckets)",
+        "recommendation": "Use S3 bucket policies / IAM instead of object ACLs."
+    },
+    {
+        "pattern": "storeSetACL\\s*\\(",
+        "severity": "CRITICAL",
+        "description": "storeSetACL() function - REMOVED in CF2025 (AWS S3 disabled ACLs for new buckets)",
+        "recommendation": "Use S3 bucket policies / IAM instead of object ACLs."
+    },
+    {
+        "pattern": "CFMX_Compat",
+        "severity": "CRITICAL",
+        "description": "CFMX_Compat algorithm - REMOVED in CF2025 from Encrypt/Decrypt/Hash/Rand family",
+        "recommendation": "Re-encrypt or re-hash data using AES/SHA-based algorithms. Any value encrypted with CFMX_Compat will not decrypt in CF2025."
+    },
+    {
+        "pattern": "createObject\\s*\\(\\s*[\"']component[\"']\\s*,\\s*[\"']org\\.cfcs\\.",
+        "severity": "HIGH",
+        "description": "Script-function CFCs (org.cfcs.*) - REMOVED in CF2025 (deprecated since CF2018)",
+        "recommendation": "Replace the bundled CFC wrappers (e.g. query, http, mail) with the native tags or script-based equivalents."
+    },
+    {
+        "pattern": "format\\s*[:=]\\s*[\"']flash[\"']",
+        "severity": "HIGH",
+        "description": "format=flash attribute value (cfform/cfgrid/cfchart) - REMOVED in CF2025 (Flash/Flex removed)",
+        "recommendation": "Flash output is gone. Use format=html for forms/grids and a non-flash format (png/jpg) for cfchart."
+    },
+    {
+        "pattern": "format\\s*[:=]\\s*[\"']xml[\"']",
+        "severity": "MEDIUM",
+        "description": "format=xml on cfform - REMOVED in CF2025 (XML/Flash form formats removed)",
+        "recommendation": "Only applies to cfform. Use format=html. Verify context before changing (format=xml is valid on other tags)."
+    },
+    {
+        "pattern": "<cfform",
+        "severity": "HIGH",
+        "description": "cfform tag - RETAINED in CF2025 but accessible/height/skin/timeout/width/wMode attributes REMOVED and passthrough/enableCAB deprecated",
+        "recommendation": "Prefer a standard HTML form. If keeping cfform, remove the Flash-era attributes (skin, wMode, height, width, timeout, accessible) and the passthrough attribute."
+    },
+    {
+        "pattern": "(?<![<\\/])cfform\\b",
+        "severity": "HIGH",
+        "description": "cfform() cfscript-form - RETAINED in CF2025 but accessible/height/skin/timeout/width/wMode attributes REMOVED and passthrough/enableCAB deprecated",
+        "recommendation": "Prefer a standard HTML form. If keeping cfform, remove the Flash-era attributes (skin, wMode, height, width, timeout, accessible) and the passthrough attribute. (cfscript-form hit: tag written in script syntax.)"
+    },
+    {
+        "pattern": "<cfinput",
+        "severity": "MEDIUM",
+        "description": "cfinput tag - RETAINED in CF2025 but YUI attributes (autosuggest, sourcefortooltip, tooltip via YUI) REMOVED",
+        "recommendation": "Review for autosuggest/sourcefortooltip attributes, which no longer function. Migrate those to a JS autocomplete/tooltip library."
+    },
+    {
+        "pattern": "(?<![<\\/])cfinput\\b",
+        "severity": "MEDIUM",
+        "description": "cfinput() cfscript-form - RETAINED in CF2025 but YUI attributes (autosuggest, sourcefortooltip, tooltip via YUI) REMOVED",
+        "recommendation": "Review for autosuggest/sourcefortooltip attributes, which no longer function. Migrate those to a JS autocomplete/tooltip library. (cfscript-form hit: tag written in script syntax.)"
+    },
+    {
+        "pattern": "statusText\\s*[:=]",
+        "severity": "HIGH",
+        "description": "cfheader statusText attribute - REMOVED in CF2025 (Tomcat removed reason-phrase support)",
+        "recommendation": "Only applies to cfheader. Set statuscode only; the HTTP reason phrase can no longer be customized. Verify this is on a cfheader tag."
+    },
+    {
+        "pattern": "<cfsearch",
+        "severity": "MEDIUM",
+        "description": "cfsearch tag - RETAINED but some Solr attributes REMOVED in CF2025",
+        "recommendation": "Confirm the Solr collection exists in CF Admin and remove any Solr attributes dropped in CF2025. Review against the CF2025 attribute-removal list."
+    },
+    {
+        "pattern": "(?<![<\\/])cfsearch\\b",
+        "severity": "MEDIUM",
+        "description": "cfsearch() cfscript-form - RETAINED but some Solr attributes REMOVED in CF2025",
+        "recommendation": "Confirm the Solr collection exists in CF Admin and remove any Solr attributes dropped in CF2025. Review against the CF2025 attribute-removal list. (cfscript-form hit: tag written in script syntax.)"
+    },
+    {
+        "pattern": "<cfindex",
+        "severity": "MEDIUM",
+        "description": "cfindex tag - RETAINED but some Solr attributes REMOVED in CF2025",
+        "recommendation": "Confirm the Solr collection exists and remove Solr attributes dropped in CF2025. Review against the CF2025 attribute-removal list."
+    },
+    {
+        "pattern": "(?<![<\\/])cfindex\\b",
+        "severity": "MEDIUM",
+        "description": "cfindex() cfscript-form - RETAINED but some Solr attributes REMOVED in CF2025",
+        "recommendation": "Confirm the Solr collection exists and remove Solr attributes dropped in CF2025. Review against the CF2025 attribute-removal list. (cfscript-form hit: tag written in script syntax.)"
+    },
+    {
+        "pattern": "<cfinsert",
+        "severity": "LOW",
+        "description": "cfinsert tag - RETAINED but some attributes REMOVED in CF2025",
+        "recommendation": "Review attributes against the CF2025 removal list. Consider replacing with explicit queryExecute/cfquery INSERT for clarity."
+    },
+    {
+        "pattern": "(?<![<\\/])cfinsert\\b",
+        "severity": "LOW",
+        "description": "cfinsert() cfscript-form - RETAINED but some attributes REMOVED in CF2025",
+        "recommendation": "Review attributes against the CF2025 removal list. Consider replacing with explicit queryExecute/cfquery INSERT for clarity. (cfscript-form hit: tag written in script syntax.)"
+    },
+    {
+        "pattern": "<cfupdate",
+        "severity": "LOW",
+        "description": "cfupdate tag - RETAINED but some attributes REMOVED in CF2025",
+        "recommendation": "Review attributes against the CF2025 removal list. Consider replacing with explicit queryExecute/cfquery UPDATE."
+    },
+    {
+        "pattern": "(?<![<\\/])cfupdate\\b",
+        "severity": "LOW",
+        "description": "cfupdate() cfscript-form - RETAINED but some attributes REMOVED in CF2025",
+        "recommendation": "Review attributes against the CF2025 removal list. Consider replacing with explicit queryExecute/cfquery UPDATE. (cfscript-form hit: tag written in script syntax.)"
+    },
+    {
+        "pattern": "<cfobject",
+        "severity": "LOW",
+        "description": "cfobject tag - RETAINED but some attribute values REMOVED in CF2025 (e.g. Flash/mobile-related)",
+        "recommendation": "Review type/action attribute values against the CF2025 removal list. Most COM/Java/component usage is unaffected."
+    },
+    {
+        "pattern": "(?<![<\\/])cfobject\\b",
+        "severity": "LOW",
+        "description": "cfobject() cfscript-form - RETAINED but some attribute values REMOVED in CF2025 (e.g. Flash/mobile-related)",
+        "recommendation": "Review type/action attribute values against the CF2025 removal list. Most COM/Java/component usage is unaffected. (cfscript-form hit: tag written in script syntax.)"
+    },
+    {
+        "pattern": "<cfthread",
+        "severity": "LOW",
+        "description": "cfthread tag - RETAINED but terminate action REMOVED in CF2025 (JDK21 removed Thread.stop())",
+        "recommendation": "Remove any action=terminate usage. Redesign to cooperative cancellation. Basic cfthread run/join still works."
+    },
+    {
+        "pattern": "(?<![<\\/])cfthread\\b",
+        "severity": "LOW",
+        "description": "cfthread() cfscript-form - RETAINED but terminate action REMOVED in CF2025 (JDK21 removed Thread.stop())",
+        "recommendation": "Remove any action=terminate usage. Redesign to cooperative cancellation. Basic cfthread run/join still works. (cfscript-form hit: tag written in script syntax.)"
+    },
+    {
+        "pattern": "<cfftp",
+        "severity": "LOW",
+        "description": "cfftp tag - ssh-rsa fingerprint algorithm DEPRECATED in CF2025 (security)",
+        "recommendation": "If using the fingerprint attribute with ssh-rsa, migrate to a stronger host-key algorithm (e.g. ecdsa/ed25519)."
+    },
+    {
+        "pattern": "(?<![<\\/])cfftp\\b",
+        "severity": "LOW",
+        "description": "cfftp() cfscript-form - ssh-rsa fingerprint algorithm DEPRECATED in CF2025 (security)",
+        "recommendation": "If using the fingerprint attribute with ssh-rsa, migrate to a stronger host-key algorithm (e.g. ecdsa/ed25519). (cfscript-form hit: tag written in script syntax.)"
+    },
+    {
+        "pattern": "createObject\\s*\\(\\s*[\"']webservice[\"']",
+        "severity": "HIGH",
+        "description": "Web service object creation - Axis 1 REMOVED in CF2025 (only Axis 2 remains)",
+        "recommendation": "Ensure web services use Axis 2. Axis 1 is fully removed; regenerate stubs/WSDL consumption under Axis 2."
+    },
+    {
+        "pattern": "wsversion\\s*[:=]\\s*[\"']?1",
+        "severity": "HIGH",
+        "description": "Axis 1 web service (wsversion=1) - REMOVED in CF2025",
+        "recommendation": "Set wsversion to 2. Axis 1 support is removed in CF2025."
+    },
+    {
+        "pattern": "<cfexchange",
+        "severity": "LOW",
+        "description": "cfexchange* tags - behavior changed in CF2025",
+        "recommendation": "Exchange tags were updated in CF2025. Re-test all Exchange integrations against the new connector behavior."
+    },
+    {
+        "pattern": "(?<![<\\/])cfexchange\\b",
+        "severity": "LOW",
+        "description": "cfexchange() cfscript-form - behavior changed in CF2025",
+        "recommendation": "Exchange tags were updated in CF2025. Re-test all Exchange integrations against the new connector behavior. (cfscript-form hit: tag written in script syntax.)"
+    },
+    {
+        "pattern": "sandbox",
+        "severity": "LOW",
+        "description": "Sandbox Security - DEPRECATED in CF2025 (Java SecurityManager removed in Java 24 / JEP486)",
+        "recommendation": "Plan to move off Sandbox Security. Broad match - verify this references CF sandbox security config, not an unrelated word."
+    }
+]
