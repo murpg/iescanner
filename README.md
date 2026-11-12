@@ -156,6 +156,7 @@ Parameters use `name=value` syntax with no dashes. All parameters are optional.
 | `output`         | string  | `ie-scan-[timestamp].[format]`   | Output file path (absolute or relative to CWD)                     |
 | `extensions`     | string  | `cfm,cfc,js,html,htm`            | Comma-separated file extensions to scan, no dots                   |
 | `patterns`       | string  | *(auto-locate config/patterns.json)* | Absolute path to a custom patterns JSON file                   |
+| `severity`       | string  | *(all severities)*               | Comma-separated severities to include: `CRITICAL`,`HIGH`,`MEDIUM`,`LOW` |
 | `verbose`        | boolean | `false`                          | Show each file as it is scanned                                    |
 | `reloadPatterns` | boolean | `false`                          | Force reload of the default patterns.json, clearing the cache      |
 | `help`           | boolean | `false`                          | Display inline help                                                |
@@ -204,6 +205,20 @@ Remove extensions to narrow the scan. For example, ColdFusion source files only:
 ```
 iescanner directory=C:\projects\myapp extensions=cfm,cfc
 ```
+
+#### Filter by Severity
+
+Limit the report to specific severity levels with the `severity` parameter. Pass a
+comma-separated list (case-insensitive); patterns of any other severity are skipped
+entirely, which also speeds the scan. For example, to drop `LOW`-severity noise and
+report only the findings that matter most:
+
+```
+iescanner directory=C:\projects\myapp severity=CRITICAL,HIGH,MEDIUM
+```
+
+A single level works too (`severity=CRITICAL`). Omit the parameter to report every
+severity, as before.
 
 #### Use a Custom Patterns File
 
@@ -721,6 +736,10 @@ This module is open source and available under the MIT License.
 For issues, questions, or suggestions, please visit: https://github.com/murpg/iescanner
 
 ## Changelog
+
+### Version 1.3.0
+
+- Added a `severity` parameter to filter the scan to specific severity levels (`CRITICAL`,`HIGH`,`MEDIUM`,`LOW`), comma-separated and case-insensitive. Non-matching patterns are skipped entirely, which also speeds the scan. Omitting it reports all severities, as before
 
 ### Version 1.2.2
 

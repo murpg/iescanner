@@ -18,6 +18,7 @@ component extends="commandbox.system.BaseCommand" {
 	 * @reloadPatterns.hint Force reload of patterns from JSON file
 	 * @extensions.hint Comma-separated list of file extensions to scan (no dots)
 	 * @patterns.hint   Absolute path to a custom patterns JSON file
+	 * @severity.hint  Comma-separated severities to include (CRITICAL,HIGH,MEDIUM,LOW); default all
 	 */
 	function run(
 		string  directory      = ".",
@@ -27,7 +28,8 @@ component extends="commandbox.system.BaseCommand" {
 		boolean verbose        = false,
 		boolean reloadPatterns = false,
 		string  extensions     = "cfm,cfc,js,html,htm",
-		string  patterns       = ""
+		string  patterns       = "",
+		string  severity       = ""
 	) {
 
 		/* Clear pattern cache if requested */
@@ -65,6 +67,8 @@ component extends="commandbox.system.BaseCommand" {
 			print.line( "  patterns       - Absolute path to a custom patterns JSON file." );
 			print.line( "                   When provided, bypasses the default config/patterns.json" );
 			print.line( "                   search and the pattern cache." );
+			print.line( "  severity       - Comma-separated severities to include:" );
+			print.line( "                   CRITICAL,HIGH,MEDIUM,LOW (default: all)" );
 			print.line();
 			return;
 		}
@@ -112,7 +116,7 @@ component extends="commandbox.system.BaseCommand" {
 		/* Start scanning */
 		print.line();
 		print.line( "+==========================================+" );
-		print.line( "|   IE Legacy Code Scanner - v1.2.2       |" );
+		print.line( "|   IE Legacy Code Scanner - v1.3.0       |" );
 		print.line( "+==========================================+" );
 		print.line();
 		print.line( "Directory : #arguments.directory#" );
@@ -124,6 +128,10 @@ component extends="commandbox.system.BaseCommand" {
 			print.line( "Patterns  : #arguments.patterns#" );
 		} else {
 			print.line( "Patterns  : config/patterns.json (default)" );
+		}
+
+		if ( len( trim( arguments.severity ) ) ) {
+			print.line( "Severity  : #arguments.severity# (filter)" );
 		}
 
 		print.line();
@@ -139,6 +147,27 @@ component extends="commandbox.system.BaseCommand" {
 			loadedPatterns = loadPatternsFromFile( arguments.patterns );
 		} else {
 			loadedPatterns = getPatterns();
+		}
+
+		/* Optional severity filter: keep only patterns whose severity was requested */
+		if ( len( trim( arguments.severity ) ) ) {
+			var allowedSeverities = {};
+			for ( var sev in listToArray( arguments.severity ) ) {
+				allowedSeverities[ uCase( trim( sev ) ) ] = true;
+			}
+			var severityFiltered = [];
+			for ( var sp in loadedPatterns ) {
+				if ( structKeyExists( allowedSeverities, uCase( sp.severity ) ) ) {
+					severityFiltered.append( sp );
+				}
+			}
+			loadedPatterns = severityFiltered;
+
+			if ( loadedPatterns.len() == 0 ) {
+				print.line( "ERROR: No patterns match severity filter: #arguments.severity#" );
+				print.line( "Valid severities: CRITICAL, HIGH, MEDIUM, LOW" );
+				return;
+			}
 		}
 
 		var issues       = [];
