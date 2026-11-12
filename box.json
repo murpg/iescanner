@@ -1,6 +1,6 @@
 {
     "name":"commandbox-iescanner",
-    "version":"1.2.1",
+    "version":"1.2.2",
     "type":"commandbox-modules",
     "slug":"commandbox-iescanner",
     "shortDescription":"A CommandBox module to scan CFML for IE-specific code patterns.",
