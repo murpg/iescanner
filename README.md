@@ -722,6 +722,10 @@ For issues, questions, or suggestions, please visit: https://github.com/murpg/ie
 
 ## Changelog
 
+### Version 1.2.2
+
+- Replaced `htmlEditFormat()` with `encodeForHTML()` in the HTML report generator. `htmlEditFormat()` is removed in ColdFusion 2025 (and is flagged CRITICAL by this scanner's own CF2023 -> CF2025 patterns); `encodeForHTML()` is the CF2025-safe, OWASP-recommended replacement
+
 ### Version 1.2.1
 
 - Fixed the console banner to report the correct version (was still printing v1.1.0)

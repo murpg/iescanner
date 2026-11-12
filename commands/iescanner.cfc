@@ -112,7 +112,7 @@ component extends="commandbox.system.BaseCommand" {
 		/* Start scanning */
 		print.line();
 		print.line( "+==========================================+" );
-		print.line( "|   IE Legacy Code Scanner - v1.2.1       |" );
+		print.line( "|   IE Legacy Code Scanner - v1.2.2       |" );
 		print.line( "+==========================================+" );
 		print.line();
 		print.line( "Directory : #arguments.directory#" );
@@ -563,11 +563,11 @@ component extends="commandbox.system.BaseCommand" {
 
 			for ( var issue in arguments.issues ) {
 				html.append( '<tr>' );
-				html.append( '<td>#htmlEditFormat( issue.file )#</td>' );
+				html.append( '<td>#encodeForHTML( issue.file )#</td>' );
 				html.append( '<td>#issue.line#</td>' );
 				html.append( '<td class="#lcase( issue.severity )#">#issue.severity#</td>' );
-				html.append( '<td>#htmlEditFormat( issue.description )#</td>' );
-				html.append( '<td>#htmlEditFormat( issue.recommendation )#</td>' );
+				html.append( '<td>#encodeForHTML( issue.description )#</td>' );
+				html.append( '<td>#encodeForHTML( issue.recommendation )#</td>' );
 				html.append( '</tr>' );
 			}
 
